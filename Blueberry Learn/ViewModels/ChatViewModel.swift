@@ -39,6 +39,7 @@ class ChatViewModel: ObservableObject {
 
     let space: LearningSpace
     var session: ChatSession
+    private var isNewSession = false // Track if this is a new unsaved session
     private let storageService = StorageService.shared
     private let anthropicService = AnthropicService()
     private let promptManager = PromptManager.shared
@@ -48,13 +49,15 @@ class ChatViewModel: ObservableObject {
     init(space: LearningSpace, sessionId: UUID? = nil) {
         self.space = space
 
-        // Load existing session or create new one
+        // Load existing session or create new one (in memory only)
         if let sessionId = sessionId,
            let existingSession = storageService.getSession(sessionId, from: space.id) {
             self.session = existingSession
+            self.isNewSession = false
         } else {
-            // Create a new session if no sessionId provided
-            self.session = storageService.createSession(for: space.id)
+            // Create a new session in memory but don't save it yet
+            self.session = ChatSession(spaceId: space.id)
+            self.isNewSession = true
         }
 
         loadMessages()
@@ -92,7 +95,18 @@ class ChatViewModel: ObservableObject {
         session.messages.append(userMessage)
         session.lastMessageDate = Date()
         session.updateTitle() // Update title if this is first message
-        storageService.updateSession(session)
+
+        // If this is a new unsaved session, save it now
+        if isNewSession {
+            // Add the session to storage for the first time
+            var sessions = storageService.loadSessions(for: space.id)
+            sessions.append(session)
+            storageService.saveSessions(sessions, for: space.id)
+            isNewSession = false
+        } else {
+            // Update existing session
+            storageService.updateSession(session)
+        }
 
         let currentInput = inputText
         inputText = ""
@@ -273,7 +287,16 @@ class ChatViewModel: ObservableObject {
         messages.append(acknowledgmentMessage)
         session.messages.append(acknowledgmentMessage)
         session.lastMessageDate = Date()
-        storageService.updateSession(session)
+
+        // If this is a new unsaved session, save it now
+        if isNewSession {
+            var sessions = storageService.loadSessions(for: space.id)
+            sessions.append(session)
+            storageService.saveSessions(sessions, for: space.id)
+            isNewSession = false
+        } else {
+            storageService.updateSession(session)
+        }
     }
 
     func endTimer() {
@@ -338,6 +361,14 @@ class ChatViewModel: ObservableObject {
 
         // Add empty assistant message to session
         session.messages.append(assistantMessage)
+
+        // If this is a new unsaved session, save it now
+        if isNewSession {
+            var sessions = storageService.loadSessions(for: space.id)
+            sessions.append(session)
+            storageService.saveSessions(sessions, for: space.id)
+            isNewSession = false
+        }
 
         // Start streaming response with frustration signal
         streamingTask = Task {

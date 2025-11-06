@@ -18,21 +18,8 @@ class SpaceDetailViewModel: ObservableObject {
         sessions = storageService.loadSessions(for: space.id)
     }
 
-    func createNewSession() -> ChatSession {
-        let session = storageService.createSession(for: space.id)
-        loadSessions() // Reload to get updated list
-        return session
-    }
-
     func deleteSession(_ session: ChatSession) {
         storageService.deleteSession(session.id, from: space.id)
         loadSessions() // Reload to reflect deletion
-    }
-
-    func deleteSessionAtOffsets(_ offsets: IndexSet) {
-        for index in offsets {
-            let session = sessions[index]
-            deleteSession(session)
-        }
     }
 }

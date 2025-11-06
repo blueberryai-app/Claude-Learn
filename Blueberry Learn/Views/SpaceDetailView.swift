@@ -5,7 +5,6 @@ struct SpaceDetailView: View {
     @StateObject private var viewModel: SpaceDetailViewModel
     @State private var navigateToNewChat = false
     @State private var navigateToSession: ChatSession? = nil
-    @State private var newSessionId: UUID? = nil
 
     init(space: LearningSpace) {
         self.space = space
@@ -111,8 +110,6 @@ struct SpaceDetailView: View {
 
             // Floating action button
             Button(action: {
-                let newSession = viewModel.createNewSession()
-                newSessionId = newSession.id
                 navigateToNewChat = true
             }) {
                 Image(systemName: "plus")
@@ -132,9 +129,7 @@ struct SpaceDetailView: View {
             viewModel.loadSessions()
         }
         .navigationDestination(isPresented: $navigateToNewChat) {
-            if let sessionId = newSessionId {
-                ChatView(space: space, sessionId: sessionId)
-            }
+            ChatView(space: space, sessionId: nil)
         }
         .navigationDestination(item: $navigateToSession) { session in
             ChatView(space: space, sessionId: session.id)
