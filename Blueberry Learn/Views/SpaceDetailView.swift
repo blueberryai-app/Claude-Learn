@@ -52,20 +52,16 @@ struct SpaceDetailView: View {
                 // Chat history section
                 VStack(alignment: .leading, spacing: 0) {
                     if !viewModel.sessions.isEmpty {
-                        // Header for chat sessions
-                        Text("Your chats")
-                            .font(.system(size: 15))
-                            .foregroundColor(.primary)
-                            .padding(.horizontal, 20)
-                            .padding(.bottom, 12)
-
-                        // Sessions list with constrained ScrollView
-                        ScrollView {
-                            VStack(spacing: 12) {
+                        // Sessions list with List for swipe actions
+                        List {
+                            Section {
                                 ForEach(viewModel.sessions) { session in
                                     SessionCard(session: session) {
                                         navigateToSession = session
                                     }
+                                    .listRowInsets(EdgeInsets(top: 6, leading: 20, bottom: 6, trailing: 20))
+                                    .listRowSeparator(.hidden)
+                                    .listRowBackground(Color.clear)
                                     .swipeActions(edge: .trailing, allowsFullSwipe: true) {
                                         Button(role: .destructive) {
                                             viewModel.deleteSession(session)
@@ -81,10 +77,15 @@ struct SpaceDetailView: View {
                                         }
                                     }
                                 }
+                            } header: {
+                                Text("Your chats")
+                                    .font(.system(size: 15))
+                                    .foregroundColor(.primary)
+                                    .textCase(nil)
                             }
-                            .padding(.horizontal, 20)
-                            .padding(.bottom, 20)
                         }
+                        .listStyle(.plain)
+                        .scrollContentBackground(.hidden)
                     } else {
                         // Empty state centered in remaining space
                         Spacer()
