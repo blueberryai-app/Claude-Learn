@@ -1,4 +1,5 @@
 import SwiftUI
+import MarkdownUI
 
 struct ChatView: View {
     let space: LearningSpace
@@ -267,7 +268,6 @@ struct ChatView: View {
                             .font(.system(size: 20))
 
                     }
-                    .tint(.red)
                     .disabled(viewModel.isFrustrationButtonDisabled)
                 }
             }
@@ -351,7 +351,7 @@ struct MessageBubble: View {
                 }
 
                 HStack {
-                    Text(message.content)
+                    Markdown(message.content)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 10)
                         .background(
