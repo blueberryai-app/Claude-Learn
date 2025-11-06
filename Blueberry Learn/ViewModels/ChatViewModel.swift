@@ -19,6 +19,7 @@ class ChatViewModel: ObservableObject {
     @Published var isShowingTimerSelection = false
     @Published var isShowingTimerDetail = false
     @Published var hasShownExpiredMessage = false
+    @Published var showNavigationAlert = false
 
     let space: LearningSpace
     var session: ChatSession
@@ -189,6 +190,23 @@ class ChatViewModel: ObservableObject {
     func startTimer(minutes: Int) {
         sessionTimer.start(minutes: minutes)
         hasShownExpiredMessage = false
+
+        // Add automatic acknowledgment message from the assistant
+        let durationText = minutes >= 60 ? "\(minutes / 60) hour\(minutes >= 120 ? "s" : "")" : "\(minutes) minutes"
+        let acknowledgmentText = "Got it! I see we have \(durationText) for our session today. This will help me pace our conversation and keep us on track for the time you have available. What would you like to focus on?"
+
+        let acknowledgmentMessage = ChatMessage(
+            content: acknowledgmentText,
+            role: .assistant,
+            spaceId: space.id,
+            activeMode: currentMode,
+            activeLens: currentLens?.name
+        )
+
+        messages.append(acknowledgmentMessage)
+        session.messages.append(acknowledgmentMessage)
+        session.lastMessageDate = Date()
+        storageService.updateSession(session)
     }
 
     func endTimer() {

@@ -5,6 +5,7 @@ struct ChatView: View {
     let sessionId: UUID?
     @StateObject private var viewModel: ChatViewModel
     @FocusState private var isInputFocused: Bool
+    @Environment(\.dismiss) private var dismiss
 
     init(space: LearningSpace, sessionId: UUID? = nil) {
         self.space = space
@@ -50,7 +51,7 @@ struct ChatView: View {
                     }
                     .padding()
                 }
-                .onChange(of: viewModel.messages.count) { _ in
+                .onChange(of: viewModel.messages.count) {
                     withAnimation {
                         proxy.scrollTo(viewModel.messages.last?.id, anchor: .bottom)
                     }
@@ -161,7 +162,22 @@ struct ChatView: View {
         }
         .navigationTitle(space.name)
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(viewModel.sessionTimer.isActive)
         .toolbar {
+            // Custom back button when timer is active
+            if viewModel.sessionTimer.isActive {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button(action: {
+                        viewModel.showNavigationAlert = true
+                    }) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                            Text("Back")
+                        }
+                    }
+                }
+            }
+
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack(spacing: 16) {
                     // Timer button - shows clock or progress
@@ -214,6 +230,15 @@ struct ChatView: View {
             }
         } message: {
             Text("Who would you like Claude to act as?")
+        }
+        .alert("End Timer Session?", isPresented: $viewModel.showNavigationAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Leave Anyway", role: .destructive) {
+                viewModel.endTimer()
+                dismiss()
+            }
+        } message: {
+            Text("Leaving will end your current timer session. You can always start a new one later.")
         }
     }
 }
