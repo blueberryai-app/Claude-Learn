@@ -14,10 +14,9 @@ struct ModeSelectionSheet: View {
                     AttachmentOption(icon: "photo", label: "Photos")
                     AttachmentOption(icon: "folder", label: "Files")
                 }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
-                .padding()
+                .padding(.horizontal, 20)
+                .padding(.top, 24)
+                .padding(.bottom, 28)
 
                 // Learning modes
                 VStack(spacing: 16) {
@@ -37,12 +36,13 @@ struct ModeSelectionSheet: View {
                     }
 
                     // Learning Lens selector
-                    HStack {
+                    HStack(spacing: 12) {
                         Image(systemName: "sparkles")
-                            .font(.title3)
+                            .font(.system(size: 20))
+                            .frame(width: 30)
 
                         Text("Learning Lens")
-                            .font(.body)
+                            .font(.system(size: 17))
 
                         Spacer()
 
@@ -54,38 +54,39 @@ struct ModeSelectionSheet: View {
                                 }
                             }
                         } label: {
-                            HStack {
+                            HStack(spacing: 6) {
                                 Text(selectedLens)
-                                    .foregroundColor(.primary)
+                                    .font(.system(size: 15))
+                                    .foregroundColor(.secondary)
                                 Image(systemName: "chevron.down")
-                                    .font(.caption)
+                                    .font(.system(size: 12))
                                     .foregroundColor(.secondary)
                             }
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color(.systemGray5))
-                            .cornerRadius(8)
                         }
                     }
-                    .padding()
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 18)
                     .background(Color(.systemGray6))
                     .cornerRadius(12)
                 }
-                .padding(.horizontal)
+                .padding(.horizontal, 20)
 
                 Spacer()
             }
-            .navigationTitle("Education Modes")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Done") {
+                    Button(action: {
                         dismiss()
+                    }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 18))
+                            .foregroundColor(.primary)
                     }
                 }
             }
         }
-        .presentationDetents([.medium])
+        .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
     }
 }
@@ -95,17 +96,19 @@ struct AttachmentOption: View {
     let label: String
 
     var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 10) {
             Image(systemName: icon)
-                .font(.title2)
-                .frame(width: 60, height: 60)
-                .background(Color(.systemBackground))
+                .font(.system(size: 26))
+                .foregroundColor(.primary)
+                .frame(width: 90, height: 64)
+                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
                 .cornerRadius(12)
 
             Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
+                .font(.system(size: 15))
+                .foregroundColor(.primary)
         }
+        .frame(maxWidth: .infinity)
     }
 }
 
@@ -116,29 +119,32 @@ struct ModeToggleRow: View {
 
     var body: some View {
         Button(action: action) {
-            HStack {
+            HStack(spacing: 14) {
                 Image(systemName: mode.icon)
-                    .font(.title3)
+                    .font(.system(size: 20))
                     .frame(width: 30)
 
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(mode.rawValue)
-                        .font(.body)
-                        .foregroundColor(.primary)
-
-                    Text(mode.description)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                Text(mode.rawValue)
+                    .font(.system(size: 17))
+                    .foregroundColor(isSelected ? Color.blue : .primary)
 
                 Spacer()
 
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.title2)
-                    .foregroundColor(isSelected ? .accentColor : .secondary)
+                Circle()
+                    .strokeBorder(isSelected ? Color.blue : Color.secondary, lineWidth: 2)
+                    .background(Circle().fill(isSelected ? Color.blue : Color.clear))
+                    .overlay(
+                        isSelected ?
+                        Image(systemName: "checkmark")
+                            .font(.system(size: 14, weight: .bold))
+                            .foregroundColor(.white)
+                        : nil
+                    )
+                    .frame(width: 24, height: 24)
             }
-            .padding()
-            .background(Color(.systemGray6))
+            .padding(.horizontal, 18)
+            .padding(.vertical, 18)
+            .background(isSelected ? Color.blue.opacity(0.1) : Color(.systemGray6))
             .cornerRadius(12)
         }
         .buttonStyle(PlainButtonStyle())

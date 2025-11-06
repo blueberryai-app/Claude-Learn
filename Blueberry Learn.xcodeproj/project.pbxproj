@@ -6,10 +6,6 @@
 	objectVersion = 77;
 	objects = {
 
-/* Begin PBXBuildFile section */
-		29FB873D2EBC0B2C00912190 /* AIProxy in Frameworks */ = {isa = PBXBuildFile; productRef = 29FB873C2EBC0B2C00912190 /* AIProxy */; };
-/* End PBXBuildFile section */
-
 /* Begin PBXContainerItemProxy section */
 		29FB871F2EBBD7F200912190 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -56,7 +52,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				29FB873D2EBC0B2C00912190 /* AIProxy in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -117,7 +112,6 @@
 			);
 			name = "Blueberry Learn";
 			packageProductDependencies = (
-				29FB873C2EBC0B2C00912190 /* AIProxy */,
 			);
 			productName = "Blueberry Learn";
 			productReference = 29FB87112EBBD7F100912190 /* Blueberry Learn.app */;
@@ -202,7 +196,6 @@
 			mainGroup = 29FB87082EBBD7F100912190;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				29FB873B2EBC0B2C00912190 /* XCRemoteSwiftPackageReference "AIProxySwift" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 29FB87122EBBD7F100912190 /* Products */;
@@ -587,25 +580,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCRemoteSwiftPackageReference section */
-		29FB873B2EBC0B2C00912190 /* XCRemoteSwiftPackageReference "AIProxySwift" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/lzell/AIProxySwift";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.130.0;
-			};
-		};
-/* End XCRemoteSwiftPackageReference section */
-
-/* Begin XCSwiftPackageProductDependency section */
-		29FB873C2EBC0B2C00912190 /* AIProxy */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 29FB873B2EBC0B2C00912190 /* XCRemoteSwiftPackageReference "AIProxySwift" */;
-			productName = AIProxy;
-		};
-/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 29FB87092EBBD7F100912190 /* Project object */;
 }

@@ -27,33 +27,31 @@ struct SpacesGridView: View {
                 }
 
                 // Bottom toolbar
-                HStack {
+                HStack(spacing: 16) {
                     // Search field
                     HStack {
                         Image(systemName: "magnifyingglass")
                             .foregroundColor(.secondary)
+                            .font(.system(size: 16))
                         TextField("Search", text: $viewModel.searchText)
+                            .font(.system(size: 17))
                     }
                     .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+                    .padding(.vertical, 10)
                     .background(Color(.systemGray6))
                     .cornerRadius(10)
-
-                    Spacer()
 
                     // Add button
                     Button(action: {
                         viewModel.isShowingCreateSpace = true
                     }) {
                         Image(systemName: "plus")
-                            .font(.title2)
+                            .font(.system(size: 20, weight: .medium))
                             .foregroundColor(.primary)
-                            .frame(width: 44, height: 44)
-                            .background(Color(.systemGray6))
-                            .clipShape(Circle())
                     }
                 }
-                .padding()
+                .padding(.horizontal, 20)
+                .padding(.vertical, 12)
                 .background(Color(.systemBackground))
             }
             .navigationTitle("Learning Spaces")
@@ -73,19 +71,21 @@ struct SpaceTile: View {
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: space.icon)
-                .font(.system(size: 36))
+                .font(.system(size: 40, weight: .light))
                 .foregroundColor(.primary)
+                .frame(height: 60)
 
             Text(space.name)
-                .font(.system(size: 16, weight: .medium))
+                .font(.system(size: 17, weight: .regular))
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .frame(maxWidth: .infinity, minHeight: 120)
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(16)
+        .frame(maxWidth: .infinity, minHeight: 140)
+        .padding(.vertical, 24)
+        .padding(.horizontal, 16)
+        .background(Color(red: 0.93, green: 0.91, blue: 0.87))
+        .cornerRadius(20)
     }
 }
 

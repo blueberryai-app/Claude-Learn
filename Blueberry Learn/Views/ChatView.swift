@@ -43,50 +43,19 @@ struct ChatView: View {
             }
 
             // Input toolbar
-            VStack(spacing: 0) {
+            VStack(spacing: 12) {
                 Divider()
 
-                HStack(spacing: 12) {
-                    // Attachment buttons
-                    HStack(spacing: 8) {
-                        Button(action: {}) {
-                            Image(systemName: "plus")
-                                .font(.title3)
-                                .foregroundColor(.primary)
-                        }
-
-                        Button(action: {}) {
-                            Image(systemName: "doc.text")
-                                .font(.title3)
-                                .foregroundColor(.primary)
-                        }
-
-                        Button(action: {
-                            viewModel.isShowingModeSelection.toggle()
-                        }) {
-                            Image(systemName: viewModel.currentMode.icon)
-                                .font(.title3)
-                                .foregroundColor(viewModel.currentMode == .standard ? .primary : .accentColor)
-                        }
-
-                        Button(action: {}) {
-                            Image(systemName: "theatermasks")
-                                .font(.title3)
-                                .foregroundColor(.primary)
-                        }
-
-                        Button(action: {}) {
-                            Image(systemName: "doc.on.clipboard")
-                                .font(.title3)
-                                .foregroundColor(.primary)
-                        }
-                    }
-
+                VStack(spacing: 12) {
                     // Input field
-                    HStack {
+                    HStack(spacing: 8) {
                         TextField("I want to learn more about \(space.name.lowercased())", text: $viewModel.inputText)
                             .textFieldStyle(PlainTextFieldStyle())
                             .focused($isInputFocused)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(20)
                             .onSubmit {
                                 viewModel.sendMessage()
                             }
@@ -94,30 +63,99 @@ struct ChatView: View {
                         Button(action: {
                             viewModel.sendMessage()
                         }) {
-                            Image(systemName: "arrow.up.circle.fill")
-                                .font(.title2)
-                                .foregroundColor(viewModel.inputText.isEmpty ? .gray : .orange)
+                            Image(systemName: "arrow.up")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.white)
+                                .frame(width: 40, height: 40)
+                                .background(viewModel.inputText.isEmpty ? Color.gray : Color(red: 0.76, green: 0.44, blue: 0.35))
+                                .clipShape(Circle())
                         }
                         .disabled(viewModel.inputText.isEmpty)
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(20)
+
+                    // Mode selector buttons
+                    HStack(spacing: 16) {
+                        // Plus button to open full mode selection
+                        Button(action: {
+                            viewModel.isShowingModeSelection.toggle()
+                        }) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 20))
+                                .foregroundColor(.primary)
+                                .frame(width: 32, height: 32)
+                        }
+
+                        // Writing Mode
+                        Button(action: {
+                            viewModel.switchMode(.writing)
+                        }) {
+                            Image("writing_mode")
+                                .renderingMode(.template)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 24, height: 24)
+                                .foregroundColor(viewModel.currentMode == .writing ? .blue : .primary)
+                                .frame(width: 32, height: 32)
+                        }
+
+                        // Debate Me
+                        Button(action: {
+                            viewModel.switchMode(.debate)
+                        }) {
+                            Image("debate_mode")
+                                .renderingMode(.template)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 24, height: 24)
+                                .foregroundColor(viewModel.currentMode == .debate ? .blue : .primary)
+                                .frame(width: 32, height: 32)
+                        }
+
+                        // Custom Entity
+                        Button(action: {
+                            viewModel.switchMode(.customEntity)
+                        }) {
+                            Image("custom_entity")
+                                .renderingMode(.template)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 24, height: 24)
+                                .foregroundColor(viewModel.currentMode == .customEntity ? .blue : .primary)
+                                .frame(width: 32, height: 32)
+                        }
+
+                        // Quiz Me
+                        Button(action: {
+                            viewModel.switchMode(.quiz)
+                        }) {
+                            Image("quiz_me")
+                                .renderingMode(.template)
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 24, height: 24)
+                                .foregroundColor(viewModel.currentMode == .quiz ? .blue : .primary)
+                                .frame(width: 32, height: 32)
+                        }
+
+                        Spacer()
+                    }
                 }
-                .padding()
+                .padding(.horizontal, 16)
+                .padding(.bottom, 12)
             }
         }
         .navigationTitle(space.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                HStack {
+                HStack(spacing: 16) {
                     Button(action: {}) {
                         Image(systemName: "clock")
+                            .font(.system(size: 20))
                     }
                     Button(action: {}) {
-                        Image(systemName: "square.and.arrow.down")
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 20))
                     }
                 }
             }
@@ -184,14 +222,14 @@ struct EmptyStateView: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.system(size: 60))
-                .foregroundColor(.secondary)
-                .padding()
+            Image("book")
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(width: 100, height: 100)
 
             Text("What are we learning today?")
-                .font(.title2)
-                .foregroundColor(.secondary)
+                .font(.system(size: 22, weight: .regular))
+                .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.top, 100)

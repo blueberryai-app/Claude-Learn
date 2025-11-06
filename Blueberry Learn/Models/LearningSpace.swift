@@ -1,6 +1,6 @@
 import Foundation
 
-struct LearningSpace: Identifiable, Codable {
+struct LearningSpace: Identifiable, Codable, Hashable {
     let id: UUID
     var name: String
     var icon: String // SF Symbol name
