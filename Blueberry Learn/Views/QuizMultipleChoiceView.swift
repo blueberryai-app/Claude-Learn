@@ -23,7 +23,8 @@ struct QuizMultipleChoiceView: View {
                             option: option,
                             isSelected: viewModel.selectedMultipleChoiceAnswer == option,
                             isSubmitted: viewModel.hasSubmittedCurrentAnswer,
-                            isCorrect: option.hasPrefix(question.correctAnswer ?? ""),
+                            // Only reveal correct answer after submission
+                            isCorrect: viewModel.hasSubmittedCurrentAnswer ? option.hasPrefix(question.correctAnswer ?? "") : false,
                             action: {
                                 if !viewModel.hasSubmittedCurrentAnswer {
                                     viewModel.selectedMultipleChoiceAnswer = option

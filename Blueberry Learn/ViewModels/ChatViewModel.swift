@@ -32,6 +32,11 @@ class ChatViewModel: ObservableObject {
     @Published var selectedMultipleChoiceAnswer: String?
     @Published var hasSubmittedCurrentAnswer = false
 
+    // Computed property to check if quiz is active and locked
+    var isQuizLocked: Bool {
+        return quizSession != nil && !(quizSession?.isComplete ?? false)
+    }
+
     let space: LearningSpace
     var session: ChatSession
     private let storageService = StorageService.shared
@@ -143,19 +148,29 @@ class ChatViewModel: ObservableObject {
                 // Save the complete message
                 await MainActor.run {
                     if let lastIndex = self.messages.indices.last {
-                        self.messages[lastIndex].content = fullResponse
+                        // Handle quiz mode specially - parse JSON and clear content
+                        if self.currentMode == .quiz {
+                            if let quizResponse = self.parseQuizResponse(from: fullResponse) {
+                                self.messages[lastIndex].content = "" // Clear raw JSON from display
+                                self.messages[lastIndex].quizData = quizResponse
+                                self.handleQuizResponse(quizResponse)
 
-                        // Parse quiz data if in quiz mode
-                        if self.currentMode == .quiz, let quizResponse = self.parseQuizResponse(from: fullResponse) {
-                            self.messages[lastIndex].quizData = quizResponse
-                            self.handleQuizResponse(quizResponse)
+                                // Update session with quiz data
+                                self.session.messages[lastIndex].content = "" // Don't store JSON
+                                self.session.messages[lastIndex].quizData = quizResponse
+                            } else {
+                                // Failed to parse JSON, show error to user
+                                self.messages[lastIndex].content = "⚠️ Quiz Error: Invalid response format. Please try again."
+                                print("🔴 [ChatViewModel] Failed to parse quiz JSON: \(fullResponse)")
+                            }
+                        } else {
+                            // Normal mode: just store the content
+                            self.messages[lastIndex].content = fullResponse
+
+                            // Update session with assistant's response
+                            self.session.messages[lastIndex].content = fullResponse
                         }
 
-                        // Update session with assistant's response
-                        self.session.messages[lastIndex].content = fullResponse
-                        if let quizData = self.messages[lastIndex].quizData {
-                            self.session.messages[lastIndex].quizData = quizData
-                        }
                         self.session.lastMessageDate = Date()
                         self.storageService.updateSession(self.session)
                     }
@@ -456,7 +471,7 @@ class ChatViewModel: ObservableObject {
             // New question received
             if let number = quizResponse.number,
                let total = quizResponse.total,
-               let question = quizResponse.question,
+               let question = quizResponse.questionText,  // Changed from .question
                let questionTypeString = quizResponse.questionType,
                let questionType = QuizType(rawValue: questionTypeString) {
 

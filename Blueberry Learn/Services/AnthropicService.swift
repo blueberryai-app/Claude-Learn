@@ -163,9 +163,19 @@ class AnthropicService {
         let recentContext = context.suffix(10)
         for message in recentContext {
             let role: MessageParameter.Message.Role = message.role == .user ? .user : .assistant
+
+            // For messages with empty content (quiz JSON that was cleared),
+            // reconstruct a readable summary from quizData
+            var contentText = message.content
+            if contentText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
+               let quizData = message.quizData {
+                contentText = reconstructQuizContent(from: quizData)
+                print("🔵 [AnthropicService] Reconstructed quiz content from quizData")
+            }
+
             messages.append(MessageParameter.Message(
                 role: role,
-                content: .text(message.content)
+                content: .text(contentText)
             ))
         }
 
@@ -176,6 +186,50 @@ class AnthropicService {
         ))
 
         return messages
+    }
+
+    // Reconstruct readable content from quiz data for API context
+    private func reconstructQuizContent(from quizData: QuizResponse) -> String {
+        switch quizData.type {
+        case .question:
+            var text = ""
+            if let preamble = quizData.preamble {
+                text += preamble + "\n\n"
+            }
+            if let questionText = quizData.questionText {
+                text += questionText
+            }
+            if let hint = quizData.hint {
+                text += "\n\nHint: \(hint)"
+            }
+            return text.isEmpty ? "[Quiz Question]" : text
+
+        case .feedback:
+            var text = ""
+            if let isCorrect = quizData.isCorrect {
+                text += isCorrect ? "Correct! " : "Not quite right. "
+            }
+            if let explanation = quizData.explanation {
+                text += explanation
+            }
+            if let encouragement = quizData.encouragement {
+                text += "\n\n\(encouragement)"
+            }
+            return text.isEmpty ? "[Quiz Feedback]" : text
+
+        case .quizComplete:
+            var text = "Quiz Complete!\n"
+            if let score = quizData.score {
+                text += "Score: \(score)"
+            }
+            if let summary = quizData.summary {
+                text += "\n\n\(summary)"
+            }
+            return text
+
+        case .quizStart:
+            return "[Quiz Started]"
+        }
     }
 
     // Build system prompt based on current settings

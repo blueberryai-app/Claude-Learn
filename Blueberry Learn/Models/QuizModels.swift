@@ -143,44 +143,101 @@ struct QuizResponse: Codable, Hashable, Equatable {
     // For question
     let number: Int?
     let total: Int?
-    let question: String?
+    let preamble: String?  // New: Intro text before question
+    let questionText: String?  // Renamed from 'question' for clarity
+    let hint: String?  // New: Optional hint for the question
     let questionType: String?
     let options: [String]?
     let correctAnswer: String?
 
     // For feedback
     let isCorrect: Bool?
+    let userAnswer: String?  // New: What the user answered
     let explanation: String?
+    let encouragement: String?  // New: Motivational message
 
     // For quiz_complete
     let score: String?
     let percentage: Int?
+    let summary: String?  // New: Overall summary message
     let strengths: [String]?
     let weaknesses: [String]?
     let improvementPlan: String?
+    let closingMessage: String?  // New: Final message/call to action
 
     enum CodingKeys: String, CodingKey {
         case type
         case topic
         case number
         case total
-        case question
+        case preamble
+        case questionText
+        case hint
         case questionType
         case options
         case correctAnswer
         case isCorrect
+        case userAnswer
         case explanation
+        case encouragement
         case score
         case percentage
+        case summary
         case strengths
         case weaknesses
         case improvementPlan
+        case closingMessage
+    }
+
+    // Add backward compatibility for 'question' field
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        self.type = try container.decode(QuizResponseType.self, forKey: .type)
+        self.topic = try container.decodeIfPresent(String.self, forKey: .topic)
+        self.number = try container.decodeIfPresent(Int.self, forKey: .number)
+        self.total = try container.decodeIfPresent(Int.self, forKey: .total)
+        self.preamble = try container.decodeIfPresent(String.self, forKey: .preamble)
+
+        // Try to decode questionText, fall back to 'question' for backward compatibility
+        if let questionText = try container.decodeIfPresent(String.self, forKey: .questionText) {
+            self.questionText = questionText
+        } else {
+            // Try the old key name
+            enum LegacyKeys: String, CodingKey {
+                case question
+            }
+            let legacyContainer = try decoder.container(keyedBy: LegacyKeys.self)
+            self.questionText = try legacyContainer.decodeIfPresent(String.self, forKey: .question)
+        }
+
+        self.hint = try container.decodeIfPresent(String.self, forKey: .hint)
+        self.questionType = try container.decodeIfPresent(String.self, forKey: .questionType)
+        self.options = try container.decodeIfPresent([String].self, forKey: .options)
+        self.correctAnswer = try container.decodeIfPresent(String.self, forKey: .correctAnswer)
+        self.isCorrect = try container.decodeIfPresent(Bool.self, forKey: .isCorrect)
+        self.userAnswer = try container.decodeIfPresent(String.self, forKey: .userAnswer)
+        self.explanation = try container.decodeIfPresent(String.self, forKey: .explanation)
+        self.encouragement = try container.decodeIfPresent(String.self, forKey: .encouragement)
+        self.score = try container.decodeIfPresent(String.self, forKey: .score)
+        self.percentage = try container.decodeIfPresent(Int.self, forKey: .percentage)
+        self.summary = try container.decodeIfPresent(String.self, forKey: .summary)
+        self.strengths = try container.decodeIfPresent([String].self, forKey: .strengths)
+        self.weaknesses = try container.decodeIfPresent([String].self, forKey: .weaknesses)
+        self.improvementPlan = try container.decodeIfPresent(String.self, forKey: .improvementPlan)
+        self.closingMessage = try container.decodeIfPresent(String.self, forKey: .closingMessage)
     }
 }
 
 // MARK: - Quiz Response Parser
 class QuizResponseParser {
     static func parseJSON(from content: String) -> QuizResponse? {
+        // First, try to parse the entire content as JSON (for pure JSON responses)
+        if let directData = content.data(using: .utf8),
+           let response = try? JSONDecoder().decode(QuizResponse.self, from: directData) {
+            return response
+        }
+
         // Look for JSON in markdown code blocks
         let patterns = [
             "```json\\s*([\\s\\S]*?)```",  // ```json ... ```
@@ -197,6 +254,19 @@ class QuizResponseParser {
                    let response = try? JSONDecoder().decode(QuizResponse.self, from: jsonData) {
                     return response
                 }
+            }
+        }
+
+        // As a last resort, try to find raw JSON by looking for { ... } pattern
+        let jsonPattern = "\\{[\\s\\S]*\\}"
+        if let regex = try? NSRegularExpression(pattern: jsonPattern, options: []),
+           let match = regex.firstMatch(in: content, options: [], range: NSRange(content.startIndex..., in: content)),
+           let jsonRange = Range(match.range, in: content) {
+            let jsonString = String(content[jsonRange]).trimmingCharacters(in: .whitespacesAndNewlines)
+
+            if let jsonData = jsonString.data(using: .utf8),
+               let response = try? JSONDecoder().decode(QuizResponse.self, from: jsonData) {
+                return response
             }
         }
 

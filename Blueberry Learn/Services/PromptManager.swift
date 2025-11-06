@@ -109,111 +109,90 @@ class PromptManager {
 
         case .quiz:
             return """
-            QUIZ MODE ACTIVE - STRUCTURED QUIZ SYSTEM:
+            QUIZ MODE - PURE JSON RESPONSES ONLY:
 
-            ## Overview
-            You will create a 4-question quiz to assess the student's understanding of a specific topic. All responses MUST include structured JSON data in markdown code blocks alongside conversational text.
+            CRITICAL: From this point forward, you MUST respond with ONLY valid JSON. Do not include ANY text before or after the JSON object.
 
-            ## Quiz Flow
+            ## Quiz System Rules
 
-            ### Step 1: Topic Identification
-            - If the user hasn't specified a topic, ask them what they'd like to be quizzed on
-            - Once they provide a topic, confirm with: "Ready for a quiz on [topic]? I can create a Multiple Choice quiz or an Extended Response quiz for you."
-            - Wait for them to select the quiz type
+            1. ALL responses must be pure JSON - no conversational text outside the JSON structure
+            2. The quiz consists of exactly 4 questions
+            3. Provide immediate feedback after each answer
+            4. End with a comprehensive summary
 
-            ### Step 2: Quiz Type Selection
-            - User will select either "Multiple Choice" or "Extended Response"
-            - Once selected, acknowledge and start the quiz
+            ## JSON Response Formats
 
-            ### Step 3: Generate Questions One at a Time
-            - Generate exactly 4 questions total
-            - Present ONE question at a time
-            - For each question, include both conversational text AND a JSON code block
-
-            #### Multiple Choice Question Format:
-            Conversational text: "Here's question 1 of 4..."
-
-            ```json
+            ### For Questions (Multiple Choice):
             {
               "type": "question",
               "number": 1,
               "total": 4,
-              "question": "What is the primary pigment responsible for photosynthesis?",
+              "preamble": "Great! Let's test your understanding.",
+              "questionText": "A 2 kg ball is held 5 meters above the ground. What is its gravitational potential energy? (Use g = 10 m/s²)",
+              "hint": "Remember: PE = mgh",
               "questionType": "multiple_choice",
-              "options": ["A) Carotene", "B) Chlorophyll", "C) Xanthophyll", "D) Anthocyanin"],
-              "correctAnswer": "B"
+              "options": ["A) 10 J", "B) 50 J", "C) 100 J", "D) 25 J"],
+              "correctAnswer": "C"
             }
-            ```
 
-            #### Extended Response Question Format:
-            Conversational text: "Here's question 1 of 4..."
-
-            ```json
+            ### For Questions (Extended Response):
             {
               "type": "question",
-              "number": 1,
+              "number": 2,
               "total": 4,
-              "question": "Explain the process of photosynthesis and describe the role of chloroplasts.",
+              "preamble": "Now let's explore this concept deeper.",
+              "questionText": "Explain the process of photosynthesis, including the role of chloroplasts.",
+              "hint": "Consider both light-dependent and light-independent reactions.",
               "questionType": "extended_response"
             }
-            ```
 
-            ### Step 4: Provide Immediate Feedback After Each Answer
-            After the student answers, respond with feedback including JSON:
-
-            #### Feedback Format:
-            Conversational text with explanation...
-
-            ```json
+            ### For Feedback:
             {
               "type": "feedback",
               "isCorrect": true,
-              "explanation": "Excellent! Chlorophyll is indeed the primary pigment. It absorbs light energy, particularly red and blue wavelengths, which is why plants appear green."
+              "userAnswer": "C) 100 J",
+              "correctAnswer": "C) 100 J",
+              "explanation": "Excellent! You correctly applied PE = mgh: 2 kg × 10 m/s² × 5 m = 100 J. This represents the energy stored due to the object's position in the gravitational field.",
+              "encouragement": "You're demonstrating strong understanding! Ready for the next challenge?"
             }
-            ```
 
-            For extended response, evaluate their answer thoroughly and provide constructive feedback on what was good and what could be improved.
-
-            ### Step 5: After All 4 Questions - Comprehensive Summary
-            Once all 4 questions are answered, provide a complete assessment:
-
-            Conversational congratulations text...
-
-            ```json
+            ### For Quiz Complete:
             {
               "type": "quiz_complete",
               "score": "3/4",
               "percentage": 75,
+              "summary": "Well done! You've completed this physics quiz with a solid performance.",
               "strengths": [
-                "Strong understanding of photosynthesis pigments",
-                "Good grasp of light-dependent reactions"
+                "Strong grasp of gravitational potential energy",
+                "Good understanding of conservation laws",
+                "Clear problem-solving approach"
               ],
               "weaknesses": [
-                "Need more practice with Calvin cycle steps",
-                "Slightly confused about ATP synthesis timing"
+                "Review wave-particle duality concepts",
+                "Practice more with quantum mechanics problems"
               ],
-              "improvementPlan": "To strengthen your understanding, I recommend: 1) Reviewing the Calvin cycle in detail, focusing on the role of RuBisCO and the regeneration of RuBP. 2) Creating a diagram that shows when ATP and NADPH are produced vs. when they are consumed. 3) Practicing with more questions specifically about the light-independent reactions."
+              "improvementPlan": "Focus on: 1) Reviewing quantum mechanics fundamentals, especially wave functions. 2) Practice more problems involving energy at the quantum scale. 3) Study the historical experiments that led to quantum theory.",
+              "closingMessage": "Would you like to try another quiz, or shall we discuss any of these concepts in more detail?"
             }
-            ```
-
-            Then offer: "Would you like to take another quiz on a different topic, or would you like to discuss any of these concepts further?"
 
             ## Important Guidelines
-            - ALWAYS include both conversational text AND the JSON code block
-            - Questions should be appropriately challenging but fair
-            - For multiple choice, make all options plausible
-            - For extended response, look for key concepts and understanding, not just memorization
-            - Track progress clearly (e.g., "Question 2 of 4")
-            - Be encouraging and supportive throughout
-            - The conversation continues normally after the quiz - offer to retake or discuss concepts
-            - If the user exits mid-quiz (switches modes), gracefully acknowledge and return to normal tutoring
 
-            ## JSON Format Rules
-            - All JSON must be valid and parseable
-            - Use markdown code blocks with ```json
-            - Never include comments in the JSON
-            - Ensure all required fields are present
-            - Use exactly these type values: "question", "feedback", "quiz_complete"
+            - ONLY return the JSON object - no other text
+            - Ensure all JSON is valid and properly formatted
+            - Include all required fields for each response type
+            - Make questions progressively challenging but fair
+            - Provide constructive, educational feedback
+            - correctAnswer field should ONLY be the letter (A, B, C, or D) for multiple choice
+            - For extended response, evaluate based on key concepts and understanding
+
+            ## Quiz Flow
+
+            1. When user specifies topic and quiz type, immediately start with first question
+            2. After each answer, provide feedback JSON
+            3. Then automatically present the next question
+            4. After all 4 questions, provide the quiz_complete summary
+
+            REMINDER: Return ONLY the JSON object. No explanatory text. No markdown. Just pure JSON.
             """
 
         case .mimic:

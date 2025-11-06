@@ -127,9 +127,10 @@ struct ChatView: View {
                         }) {
                             Image(systemName: "plus")
                                 .font(.system(size: 20))
-                                .foregroundColor(.primary)
+                                .foregroundColor(viewModel.isQuizLocked ? .gray : .primary)
                                 .frame(width: 32, height: 32)
                         }
+                        .disabled(viewModel.isQuizLocked)
 
                         // Writing Mode
                         Button(action: {
@@ -143,7 +144,7 @@ struct ChatView: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 24, height: 24)
-                                    .foregroundColor(viewModel.currentMode == .writing ? .blue : .primary)
+                                    .foregroundColor(viewModel.currentMode == .writing ? .blue : (viewModel.isQuizLocked ? .gray : .primary))
 
                                 if viewModel.currentMode == .writing {
                                     Text("Writing Mode")
@@ -159,6 +160,8 @@ struct ChatView: View {
                                     .fill(viewModel.currentMode == .writing ? Color.blue.opacity(0.1) : Color.clear)
                             )
                         }
+                        .disabled(viewModel.isQuizLocked)
+                        .opacity(viewModel.isQuizLocked ? 0.5 : 1.0)
 
                         // Debate Me
                         Button(action: {
@@ -172,7 +175,7 @@ struct ChatView: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 24, height: 24)
-                                    .foregroundColor(viewModel.currentMode == .debate ? .blue : .primary)
+                                    .foregroundColor(viewModel.currentMode == .debate ? .blue : (viewModel.isQuizLocked ? .gray : .primary))
 
                                 if viewModel.currentMode == .debate {
                                     Text("Debate Me")
@@ -188,6 +191,8 @@ struct ChatView: View {
                                     .fill(viewModel.currentMode == .debate ? Color.blue.opacity(0.1) : Color.clear)
                             )
                         }
+                        .disabled(viewModel.isQuizLocked)
+                        .opacity(viewModel.isQuizLocked ? 0.5 : 1.0)
 
                         // Mimic Mode
                         Button(action: {
@@ -201,7 +206,7 @@ struct ChatView: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 24, height: 24)
-                                    .foregroundColor(viewModel.currentMode == .mimic ? .blue : .primary)
+                                    .foregroundColor(viewModel.currentMode == .mimic ? .blue : (viewModel.isQuizLocked ? .gray : .primary))
 
                                 if viewModel.currentMode == .mimic {
                                     Text("Mimic")
@@ -217,6 +222,8 @@ struct ChatView: View {
                                     .fill(viewModel.currentMode == .mimic ? Color.blue.opacity(0.1) : Color.clear)
                             )
                         }
+                        .disabled(viewModel.isQuizLocked)
+                        .opacity(viewModel.isQuizLocked ? 0.5 : 1.0)
 
                         // Quiz Me
                         Button(action: {
@@ -230,7 +237,7 @@ struct ChatView: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 24, height: 24)
-                                    .foregroundColor(viewModel.currentMode == .quiz ? .blue : .primary)
+                                    .foregroundColor(viewModel.currentMode == .quiz ? .blue : (viewModel.isQuizLocked ? .gray : .primary))
 
                                 if viewModel.currentMode == .quiz {
                                     Text("Quiz Me")
@@ -246,6 +253,8 @@ struct ChatView: View {
                                     .fill(viewModel.currentMode == .quiz ? Color.blue.opacity(0.1) : Color.clear)
                             )
                         }
+                        .disabled(viewModel.isQuizLocked)
+                        .opacity(viewModel.isQuizLocked ? 0.5 : 1.0)
 
                         Spacer()
                     }
@@ -395,17 +404,25 @@ struct MessageBubble: View {
                 }
 
                 HStack {
-                    Markdown(message.content)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 10)
-                        .background(
-                            message.role == .user ?
-                            Color.blue : Color(.systemGray6)
-                        )
-                        .foregroundColor(message.role == .user ? .white : .primary)
-                        .cornerRadius(16)
+                    // Check if this is a quiz message with quiz data
+                    if let quizData = message.quizData {
+                        // Render quiz-specific UI
+                        QuizMessageView(quizData: quizData, message: message, viewModel: viewModel!)
+                            .frame(maxWidth: .infinity, alignment: message.role == .user ? .trailing : .leading)
+                    } else {
+                        // Normal markdown content
+                        Markdown(message.content)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(
+                                message.role == .user ?
+                                Color.blue : Color(.systemGray6)
+                            )
+                            .foregroundColor(message.role == .user ? .white : .primary)
+                            .cornerRadius(16)
+                    }
 
-                    if isStreaming && message.role == .assistant {
+                    if isStreaming && message.role == .assistant && message.quizData == nil {
                         ProgressView()
                             .scaleEffect(0.6)
                             .padding(.leading, 4)
