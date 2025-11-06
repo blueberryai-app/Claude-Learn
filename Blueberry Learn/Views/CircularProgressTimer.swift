@@ -15,7 +15,7 @@ struct CircularProgressTimer: View {
             Circle()
                 .trim(from: 0, to: timer.progress)
                 .stroke(
-                    Color.blueberryOrange,
+                    Color.claudeOrange,
                     style: StrokeStyle(lineWidth: 2, lineCap: .round)
                 )
                 .frame(width: 28, height: 28)
@@ -25,7 +25,7 @@ struct CircularProgressTimer: View {
             // Clock icon or check mark
             Image(systemName: timer.hasExpired ? "checkmark" : "clock.fill")
                 .font(.system(size: 14))
-                .foregroundColor(Color.blueberryOrange)
+                .foregroundColor(Color.claudeOrange)
                 .scaleEffect(isAnimating ? 1.0 : 0.9)
                 .animation(
                     Animation.easeInOut(duration: 1.5)

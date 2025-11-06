@@ -112,7 +112,7 @@ struct ChatView: View {
                                     .font(.system(size: 18, weight: .semibold))
                                     .foregroundColor(.white)
                                     .frame(width: 40, height: 40)
-                                    .background(viewModel.inputText.isEmpty ? Color.gray : Color.blueberryOrange)
+                                    .background(viewModel.inputText.isEmpty ? Color.gray : Color.claudeOrange)
                                     .clipShape(Circle())
                             }
                             .disabled(viewModel.inputText.isEmpty)
@@ -354,7 +354,7 @@ struct ChatView: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                    .background(Color.blueberryOrange)
+                    .background(Color.claudeOrange)
                     .cornerRadius(20)
                     .padding(.top, 8)
                     .transition(.move(edge: .top).combined(with: .opacity))

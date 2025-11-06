@@ -11,7 +11,7 @@ extension Color {
     // MARK: - Brand Colors
 
     /// Primary highlight color - warm orange/terracotta
-    static let blueberryOrange = Color(red: 0.76, green: 0.44, blue: 0.35)
+    static let claudeOrange = Color(red: 0.76, green: 0.44, blue: 0.35)
 
     // MARK: - Background Colors
 

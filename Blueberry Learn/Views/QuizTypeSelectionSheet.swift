@@ -11,7 +11,7 @@ struct QuizTypeSelectionSheet: View {
                 VStack(spacing: 12) {
                     Image(systemName: "questionmark.circle.fill")
                         .font(.system(size: 60))
-                        .foregroundColor(.blueberryOrange)
+                        .foregroundColor(.claudeOrange)
 
                     Text("Choose Quiz Type")
                         .font(.system(size: 28, weight: .bold))
@@ -70,11 +70,11 @@ struct QuizTypeOptionButton: View {
                 // Icon
                 Image(systemName: type.icon)
                     .font(.system(size: 32))
-                    .foregroundColor(.blueberryOrange)
+                    .foregroundColor(.claudeOrange)
                     .frame(width: 60, height: 60)
                     .background(
                         Circle()
-                            .fill(Color.blueberryOrange.opacity(0.1))
+                            .fill(Color.claudeOrange.opacity(0.1))
                     )
 
                 // Text content
@@ -102,7 +102,7 @@ struct QuizTypeOptionButton: View {
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
-                    .strokeBorder(Color.blueberryOrange.opacity(0.3), lineWidth: 1)
+                    .strokeBorder(Color.claudeOrange.opacity(0.3), lineWidth: 1)
             )
         }
         .buttonStyle(PlainButtonStyle())

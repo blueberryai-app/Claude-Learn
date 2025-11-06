@@ -26,7 +26,7 @@ struct TimerDetailSheet: View {
                     Circle()
                         .trim(from: 0, to: timer.progress)
                         .stroke(
-                            Color.blueberryOrange,
+                            Color.claudeOrange,
                             style: StrokeStyle(lineWidth: 8, lineCap: .round)
                         )
                         .frame(width: 120, height: 120)
@@ -49,11 +49,11 @@ struct TimerDetailSheet: View {
                 if timer.hasExpired {
                     Label("Session time expired", systemImage: "clock.badge.checkmark")
                         .font(.subheadline)
-                        .foregroundColor(Color.blueberryOrange)
+                        .foregroundColor(Color.claudeOrange)
                 } else {
                     HStack {
                         Image(systemName: "clock")
-                            .foregroundColor(Color.blueberryOrange)
+                            .foregroundColor(Color.claudeOrange)
                         Text("\(timer.remainingTimeString) remaining")
                             .font(.subheadline)
                     }
@@ -88,7 +88,7 @@ struct TimerDetailSheet: View {
                         .fontWeight(.medium)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color.blueberryOrange)
+                        .background(Color.claudeOrange)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }

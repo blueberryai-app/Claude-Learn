@@ -47,7 +47,7 @@ struct QuizMultipleChoiceView: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 14)
-                        .background(Color.blueberryOrange)
+                        .background(Color.claudeOrange)
                         .cornerRadius(12)
                 }
                 .padding(.horizontal, 16)
@@ -74,7 +74,7 @@ struct MultipleChoiceButton: View {
             }
             return Color(.systemGray6)
         }
-        return isSelected ? Color.blueberryOrange.opacity(0.15) : Color(.systemGray6)
+        return isSelected ? Color.claudeOrange.opacity(0.15) : Color(.systemGray6)
     }
 
     private var borderColor: Color {
@@ -86,7 +86,7 @@ struct MultipleChoiceButton: View {
             }
             return Color.clear
         }
-        return isSelected ? Color.blueberryOrange : Color.clear
+        return isSelected ? Color.claudeOrange : Color.clear
     }
 
     private var iconName: String? {

@@ -154,7 +154,7 @@ struct QuizCompleteView: View {
             VStack(alignment: .center, spacing: 8) {
                 Image(systemName: "trophy.fill")
                     .font(.system(size: 48))
-                    .foregroundColor(.blueberryOrange)
+                    .foregroundColor(.claudeOrange)
 
                 if let score = quizData.score {
                     Text(score)

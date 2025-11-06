@@ -18,7 +18,7 @@ struct TimerSelectionSheet: View {
                 VStack(spacing: 8) {
                     Image(systemName: "clock.fill")
                         .font(.system(size: 48))
-                        .foregroundColor(Color.blueberryOrange)
+                        .foregroundColor(Color.claudeOrange)
 
                     Text("Set Session Duration")
                         .font(.title2)
