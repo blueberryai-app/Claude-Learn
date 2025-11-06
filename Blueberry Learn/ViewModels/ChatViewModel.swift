@@ -14,12 +14,19 @@ class ChatViewModel: ObservableObject {
     @Published var streamingMessageContent = ""
     @Published var errorMessage: String?
 
+    // Timer-related properties
+    @Published var sessionTimer = SessionTimer()
+    @Published var isShowingTimerSelection = false
+    @Published var isShowingTimerDetail = false
+    @Published var hasShownExpiredMessage = false
+
     let space: LearningSpace
     var session: ChatSession
     private let storageService = StorageService.shared
     private let anthropicService = AnthropicService()
     private let promptManager = PromptManager.shared
     private var streamingTask: Task<Void, Never>?
+    private var timerObserver: AnyCancellable?
 
     init(space: LearningSpace, sessionId: UUID? = nil) {
         self.space = space
@@ -34,6 +41,7 @@ class ChatViewModel: ObservableObject {
         }
 
         loadMessages()
+        setupTimerObserver()
     }
 
     func loadMessages() {
@@ -90,7 +98,8 @@ class ChatViewModel: ObservableObject {
                     space: space,
                     mode: currentMode,
                     lens: currentLens,
-                    customEntityName: currentMode == .mimic ? customEntityName : nil
+                    customEntityName: currentMode == .mimic ? customEntityName : nil,
+                    sessionTimerDescription: sessionTimer.getSessionDescription()
                 )
 
                 var fullResponse = ""
@@ -161,7 +170,34 @@ class ChatViewModel: ObservableObject {
         isLoading = false
     }
 
+    // MARK: - Timer Methods
+
+    private func setupTimerObserver() {
+        // Observe timer expiration to send summary message
+        timerObserver = sessionTimer.$hasExpired
+            .sink { [weak self] hasExpired in
+                guard let self = self,
+                      hasExpired,
+                      !self.hasShownExpiredMessage else { return }
+
+                self.hasShownExpiredMessage = true
+                // The next message sent will include timer expiration info
+                // via sessionTimer.getSessionDescription()
+            }
+    }
+
+    func startTimer(minutes: Int) {
+        sessionTimer.start(minutes: minutes)
+        hasShownExpiredMessage = false
+    }
+
+    func endTimer() {
+        sessionTimer.stop()
+        hasShownExpiredMessage = false
+    }
+
     deinit {
         streamingTask?.cancel()
+        timerObserver?.cancel()
     }
 }

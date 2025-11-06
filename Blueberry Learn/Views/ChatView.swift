@@ -164,10 +164,22 @@ struct ChatView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack(spacing: 16) {
-                    Button(action: {}) {
-                        Image(systemName: "clock")
-                            .font(.system(size: 20))
+                    // Timer button - shows clock or progress
+                    Button(action: {
+                        if viewModel.sessionTimer.isActive {
+                            viewModel.isShowingTimerDetail = true
+                        } else {
+                            viewModel.isShowingTimerSelection = true
+                        }
+                    }) {
+                        if viewModel.sessionTimer.isActive {
+                            CircularProgressTimer(timer: viewModel.sessionTimer)
+                        } else {
+                            Image(systemName: "clock")
+                                .font(.system(size: 20))
+                        }
                     }
+
                     Button(action: {}) {
                         Image(systemName: "exclamationmark.arrow.trianglehead.2.clockwise.rotate.90")
                             .font(.system(size: 20))
@@ -179,6 +191,20 @@ struct ChatView: View {
         }
         .sheet(isPresented: $viewModel.isShowingModeSelection) {
             ModeSelectionSheet(viewModel: viewModel)
+        }
+        .sheet(isPresented: $viewModel.isShowingTimerSelection) {
+            TimerSelectionSheet(isPresented: $viewModel.isShowingTimerSelection) { minutes in
+                viewModel.startTimer(minutes: minutes)
+            }
+        }
+        .sheet(isPresented: $viewModel.isShowingTimerDetail) {
+            TimerDetailSheet(
+                timer: viewModel.sessionTimer,
+                isPresented: $viewModel.isShowingTimerDetail,
+                onEndSession: {
+                    viewModel.endTimer()
+                }
+            )
         }
         .alert("Mimic Mode", isPresented: $viewModel.showCustomEntityAlert) {
             TextField("Entity name", text: $viewModel.customEntityName)

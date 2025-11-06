@@ -10,7 +10,8 @@ class PromptManager {
         for space: LearningSpace,
         mode: LearningMode,
         lens: LearningLens?,
-        customEntityName: String? = nil
+        customEntityName: String? = nil,
+        sessionTimerDescription: String? = nil
     ) -> String {
         var components: [String] = []
 
@@ -30,6 +31,11 @@ class PromptManager {
         // Learning lens modifier
         if let lens = lens, lens.name != "None" {
             components.append(getLensInstructions(lens))
+        }
+
+        // Timer instructions if active
+        if let timerDesc = sessionTimerDescription {
+            components.append(getTimerInstructions(timerDesc))
         }
 
         // General guidelines
@@ -157,6 +163,25 @@ class PromptManager {
         LEARNING LENS (\(lens.name)):
         \(lensPrompts[lens.name] ?? lens.themeDescription)
         Make frequent connections to this theme to enhance engagement and understanding.
+        """
+    }
+
+    // Get timer-specific instructions
+    private func getTimerInstructions(_ timerDescription: String) -> String {
+        return """
+        SESSION TIMING:
+        \(timerDescription)
+
+        Important guidelines:
+        - Pace your responses appropriately for the remaining time
+        - If time is running out, focus on key takeaways and summaries
+        - When the session expires, provide a comprehensive summary including:
+          • What was covered during the session
+          • Key concepts learned
+          • Areas that went well
+          • Suggestions for future learning
+        - Keep the conversation natural while being mindful of time constraints
+        - The student can continue chatting after the timer ends if they wish
         """
     }
 
