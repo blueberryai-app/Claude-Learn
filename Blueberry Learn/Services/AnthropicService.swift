@@ -12,6 +12,11 @@ class AnthropicService {
             apiKey: self.apiKey,
             betaHeaders: nil
         )
+
+        print("🔵 [AnthropicService] Initialized")
+        print("🔵 [AnthropicService] API Key length: \(self.apiKey.count)")
+        print("🔵 [AnthropicService] API Key prefix: \(String(self.apiKey.prefix(15)))...")
+        print("🔵 [AnthropicService] Model: \(APIConfiguration.claudeModel)")
     }
 
     // Stream a message with conversation context
@@ -36,6 +41,13 @@ class AnthropicService {
             frustrationSignal: frustrationSignal
         )
 
+        print("🔵 [AnthropicService] Preparing to stream message")
+        print("🔵 [AnthropicService] API Key (first 10 chars): \(String(apiKey.prefix(10)))...")
+        print("🔵 [AnthropicService] Model: \(APIConfiguration.claudeModel)")
+        print("🔵 [AnthropicService] Max Tokens: \(APIConfiguration.maxTokens)")
+        print("🔵 [AnthropicService] Number of messages: \(messages.count)")
+        print("🔵 [AnthropicService] Current prompt: \(prompt.prefix(100))...")
+
         let parameters = MessageParameter(
             model: .other(APIConfiguration.claudeModel),
             messages: messages,
@@ -43,7 +55,9 @@ class AnthropicService {
             stream: true
         )
 
+        print("🔵 [AnthropicService] Calling service.streamMessage...")
         let stream = try await service.streamMessage(parameters)
+        print("🟢 [AnthropicService] Stream created successfully")
 
         return AsyncThrowingStream { continuation in
             Task {
@@ -53,8 +67,17 @@ class AnthropicService {
                             continuation.yield(text)
                         }
                     }
+                    print("🟢 [AnthropicService] Stream finished successfully")
                     continuation.finish()
                 } catch {
+                    print("🔴 [AnthropicService] Stream error: \(error)")
+                    print("🔴 [AnthropicService] Error type: \(type(of: error))")
+                    print("🔴 [AnthropicService] Error localized: \(error.localizedDescription)")
+                    if let nsError = error as NSError? {
+                        print("🔴 [AnthropicService] NSError domain: \(nsError.domain)")
+                        print("🔴 [AnthropicService] NSError code: \(nsError.code)")
+                        print("🔴 [AnthropicService] NSError userInfo: \(nsError.userInfo)")
+                    }
                     continuation.finish(throwing: error)
                 }
             }

@@ -109,13 +109,111 @@ class PromptManager {
 
         case .quiz:
             return """
-            QUIZ MODE ACTIVE:
-            - Generate relevant practice questions on the topic
-            - Start with moderate difficulty and adjust based on responses
-            - After each answer, provide immediate feedback
-            - Explain why answers are correct or incorrect
-            - Keep track of their progress throughout the session
-            - Mix question types (multiple choice, short answer, problem-solving)
+            QUIZ MODE ACTIVE - STRUCTURED QUIZ SYSTEM:
+
+            ## Overview
+            You will create a 4-question quiz to assess the student's understanding of a specific topic. All responses MUST include structured JSON data in markdown code blocks alongside conversational text.
+
+            ## Quiz Flow
+
+            ### Step 1: Topic Identification
+            - If the user hasn't specified a topic, ask them what they'd like to be quizzed on
+            - Once they provide a topic, confirm with: "Ready for a quiz on [topic]? I can create a Multiple Choice quiz or an Extended Response quiz for you."
+            - Wait for them to select the quiz type
+
+            ### Step 2: Quiz Type Selection
+            - User will select either "Multiple Choice" or "Extended Response"
+            - Once selected, acknowledge and start the quiz
+
+            ### Step 3: Generate Questions One at a Time
+            - Generate exactly 4 questions total
+            - Present ONE question at a time
+            - For each question, include both conversational text AND a JSON code block
+
+            #### Multiple Choice Question Format:
+            Conversational text: "Here's question 1 of 4..."
+
+            ```json
+            {
+              "type": "question",
+              "number": 1,
+              "total": 4,
+              "question": "What is the primary pigment responsible for photosynthesis?",
+              "questionType": "multiple_choice",
+              "options": ["A) Carotene", "B) Chlorophyll", "C) Xanthophyll", "D) Anthocyanin"],
+              "correctAnswer": "B"
+            }
+            ```
+
+            #### Extended Response Question Format:
+            Conversational text: "Here's question 1 of 4..."
+
+            ```json
+            {
+              "type": "question",
+              "number": 1,
+              "total": 4,
+              "question": "Explain the process of photosynthesis and describe the role of chloroplasts.",
+              "questionType": "extended_response"
+            }
+            ```
+
+            ### Step 4: Provide Immediate Feedback After Each Answer
+            After the student answers, respond with feedback including JSON:
+
+            #### Feedback Format:
+            Conversational text with explanation...
+
+            ```json
+            {
+              "type": "feedback",
+              "isCorrect": true,
+              "explanation": "Excellent! Chlorophyll is indeed the primary pigment. It absorbs light energy, particularly red and blue wavelengths, which is why plants appear green."
+            }
+            ```
+
+            For extended response, evaluate their answer thoroughly and provide constructive feedback on what was good and what could be improved.
+
+            ### Step 5: After All 4 Questions - Comprehensive Summary
+            Once all 4 questions are answered, provide a complete assessment:
+
+            Conversational congratulations text...
+
+            ```json
+            {
+              "type": "quiz_complete",
+              "score": "3/4",
+              "percentage": 75,
+              "strengths": [
+                "Strong understanding of photosynthesis pigments",
+                "Good grasp of light-dependent reactions"
+              ],
+              "weaknesses": [
+                "Need more practice with Calvin cycle steps",
+                "Slightly confused about ATP synthesis timing"
+              ],
+              "improvementPlan": "To strengthen your understanding, I recommend: 1) Reviewing the Calvin cycle in detail, focusing on the role of RuBisCO and the regeneration of RuBP. 2) Creating a diagram that shows when ATP and NADPH are produced vs. when they are consumed. 3) Practicing with more questions specifically about the light-independent reactions."
+            }
+            ```
+
+            Then offer: "Would you like to take another quiz on a different topic, or would you like to discuss any of these concepts further?"
+
+            ## Important Guidelines
+            - ALWAYS include both conversational text AND the JSON code block
+            - Questions should be appropriately challenging but fair
+            - For multiple choice, make all options plausible
+            - For extended response, look for key concepts and understanding, not just memorization
+            - Track progress clearly (e.g., "Question 2 of 4")
+            - Be encouraging and supportive throughout
+            - The conversation continues normally after the quiz - offer to retake or discuss concepts
+            - If the user exits mid-quiz (switches modes), gracefully acknowledge and return to normal tutoring
+
+            ## JSON Format Rules
+            - All JSON must be valid and parseable
+            - Use markdown code blocks with ```json
+            - Never include comments in the JSON
+            - Ensure all required fields are present
+            - Use exactly these type values: "question", "feedback", "quiz_complete"
             """
 
         case .mimic:

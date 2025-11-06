@@ -45,8 +45,34 @@ struct ChatView: View {
                             EmptyStateView(icon: space.icon)
                         } else {
                             ForEach(viewModel.messages) { message in
-                                MessageBubble(message: message, isStreaming: viewModel.isLoading && message.id == viewModel.messages.last?.id)
+                                VStack(spacing: 12) {
+                                    MessageBubble(
+                                        message: message,
+                                        isStreaming: viewModel.isLoading && message.id == viewModel.messages.last?.id,
+                                        viewModel: viewModel
+                                    )
                                     .id(message.id)
+
+                                    // Show quiz completion summary if present
+                                    if let quizData = message.quizData,
+                                       quizData.type == .quizComplete,
+                                       let session = viewModel.quizSession,
+                                       session.isComplete {
+                                        QuizCompleteSummary(quizSession: session)
+                                            .padding(.horizontal)
+                                    }
+
+                                    // Show multiple choice options after quiz question
+                                    if let quizData = message.quizData,
+                                       quizData.type == .question,
+                                       let session = viewModel.quizSession,
+                                       let currentQuestion = session.currentQuestion,
+                                       currentQuestion.questionType == .multipleChoice,
+                                       session.isAwaitingAnswer,
+                                       message.id == viewModel.messages.last?.id {
+                                        QuizMultipleChoiceView(viewModel: viewModel, question: currentQuestion)
+                                    }
+                                }
                             }
                         }
                     }
@@ -64,30 +90,33 @@ struct ChatView: View {
                 Divider()
 
                 VStack(spacing: 12) {
-                    // Input field
-                    HStack(spacing: 8) {
-                        TextField("I want to learn more about \(space.name.lowercased())", text: $viewModel.inputText)
-                            .textFieldStyle(PlainTextFieldStyle())
-                            .focused($isInputFocused)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 10)
-                            .background(Color(.systemGray6))
-                            .cornerRadius(20)
-                            .onSubmit {
-                                viewModel.sendMessage()
-                            }
+                    // Input field - hide when awaiting MC answer
+                    if !(viewModel.quizSession?.currentQuestion?.questionType == .multipleChoice &&
+                         viewModel.quizSession?.isAwaitingAnswer == true) {
+                        HStack(spacing: 8) {
+                            TextField("I want to learn more about \(space.name.lowercased())", text: $viewModel.inputText)
+                                .textFieldStyle(PlainTextFieldStyle())
+                                .focused($isInputFocused)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 10)
+                                .background(Color(.systemGray6))
+                                .cornerRadius(20)
+                                .onSubmit {
+                                    viewModel.sendMessage()
+                                }
 
-                        Button(action: {
-                            viewModel.sendMessage()
-                        }) {
-                            Image(systemName: "arrow.up")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(.white)
-                                .frame(width: 40, height: 40)
-                                .background(viewModel.inputText.isEmpty ? Color.gray : Color.blueberryOrange)
-                                .clipShape(Circle())
+                            Button(action: {
+                                viewModel.sendMessage()
+                            }) {
+                                Image(systemName: "arrow.up")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundColor(.white)
+                                    .frame(width: 40, height: 40)
+                                    .background(viewModel.inputText.isEmpty ? Color.gray : Color.blueberryOrange)
+                                    .clipShape(Circle())
+                            }
+                            .disabled(viewModel.inputText.isEmpty)
                         }
-                        .disabled(viewModel.inputText.isEmpty)
                     }
 
                     // Mode selector buttons
@@ -245,6 +274,17 @@ struct ChatView: View {
 
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack(spacing: 16) {
+                    // Exit Quiz button when quiz is active
+                    if viewModel.quizSession != nil {
+                        Button(action: {
+                            viewModel.exitQuizMode()
+                        }) {
+                            Text("Exit Quiz")
+                                .font(.system(size: 14, weight: .medium))
+                                .foregroundColor(.red)
+                        }
+                    }
+
                     // Timer button - shows clock or progress
                     Button(action: {
                         if viewModel.sessionTimer.isActive {
@@ -289,6 +329,9 @@ struct ChatView: View {
                 }
             )
         }
+        .sheet(isPresented: $viewModel.isShowingQuizTypeSelection) {
+            QuizTypeSelectionSheet(viewModel: viewModel)
+        }
         .alert("Mimic Mode", isPresented: $viewModel.showCustomEntityAlert) {
             TextField("Entity name", text: $viewModel.customEntityName)
             Button("OK") { }
@@ -328,6 +371,7 @@ struct ChatView: View {
 struct MessageBubble: View {
     let message: ChatMessage
     var isStreaming: Bool = false
+    var viewModel: ChatViewModel? = nil
 
     var body: some View {
         HStack {

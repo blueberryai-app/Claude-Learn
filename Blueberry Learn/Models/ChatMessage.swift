@@ -8,13 +8,14 @@ struct ChatMessage: Identifiable, Codable, Equatable, Hashable {
     let spaceId: UUID
     var activeMode: LearningMode?
     var activeLens: String? // For POC, just store lens name as string
+    var quizData: QuizResponse? // Parsed quiz JSON data
 
     enum MessageRole: String, Codable {
         case user
         case assistant
     }
 
-    init(content: String, role: MessageRole, spaceId: UUID, activeMode: LearningMode? = nil, activeLens: String? = nil) {
+    init(content: String, role: MessageRole, spaceId: UUID, activeMode: LearningMode? = nil, activeLens: String? = nil, quizData: QuizResponse? = nil) {
         self.id = UUID()
         self.content = content
         self.role = role
@@ -22,6 +23,7 @@ struct ChatMessage: Identifiable, Codable, Equatable, Hashable {
         self.spaceId = spaceId
         self.activeMode = activeMode
         self.activeLens = activeLens
+        self.quizData = quizData
     }
 }
 

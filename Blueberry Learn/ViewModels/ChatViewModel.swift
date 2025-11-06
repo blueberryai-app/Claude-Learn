@@ -25,6 +25,13 @@ class ChatViewModel: ObservableObject {
     @Published var frustrationButtonPressedAtMessageCount: Int?
     @Published var frustrationToastMessage: String?
 
+    // Quiz-related properties
+    @Published var quizSession: QuizSession?
+    @Published var isShowingQuizTypeSelection = false
+    @Published var pendingQuizTopic: String?
+    @Published var selectedMultipleChoiceAnswer: String?
+    @Published var hasSubmittedCurrentAnswer = false
+
     let space: LearningSpace
     var session: ChatSession
     private let storageService = StorageService.shared
@@ -55,6 +62,13 @@ class ChatViewModel: ObservableObject {
 
     func sendMessage() {
         guard !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+
+        // If in quiz mode and no quiz session, capture topic and show type selection
+        if currentMode == .quiz && quizSession == nil && pendingQuizTopic == nil {
+            pendingQuizTopic = inputText
+            isShowingQuizTypeSelection = true
+            return
+        }
 
         // Cancel any existing streaming task
         streamingTask?.cancel()
@@ -97,6 +111,11 @@ class ChatViewModel: ObservableObject {
         // Start streaming response
         streamingTask = Task {
             do {
+                print("🟡 [ChatViewModel] Starting message stream...")
+                print("🟡 [ChatViewModel] Current mode: \(currentMode)")
+                print("🟡 [ChatViewModel] Current lens: \(currentLens?.name ?? "none")")
+                print("🟡 [ChatViewModel] Message count: \(messages.count)")
+
                 let stream = try await anthropicService.streamMessage(
                     prompt: currentInput,
                     context: Array(messages.dropLast(2)), // Exclude the user message we just added and empty assistant message
@@ -106,6 +125,8 @@ class ChatViewModel: ObservableObject {
                     customEntityName: currentMode == .mimic ? customEntityName : nil,
                     sessionTimerDescription: sessionTimer.getSessionDescription()
                 )
+
+                print("🟢 [ChatViewModel] Stream obtained, starting to receive chunks...")
 
                 var fullResponse = ""
                 for try await chunk in stream {
@@ -124,8 +145,17 @@ class ChatViewModel: ObservableObject {
                     if let lastIndex = self.messages.indices.last {
                         self.messages[lastIndex].content = fullResponse
 
+                        // Parse quiz data if in quiz mode
+                        if self.currentMode == .quiz, let quizResponse = self.parseQuizResponse(from: fullResponse) {
+                            self.messages[lastIndex].quizData = quizResponse
+                            self.handleQuizResponse(quizResponse)
+                        }
+
                         // Update session with assistant's response
                         self.session.messages[lastIndex].content = fullResponse
+                        if let quizData = self.messages[lastIndex].quizData {
+                            self.session.messages[lastIndex].quizData = quizData
+                        }
                         self.session.lastMessageDate = Date()
                         self.storageService.updateSession(self.session)
                     }
@@ -133,6 +163,16 @@ class ChatViewModel: ObservableObject {
                     self.streamingMessageContent = ""
                 }
             } catch {
+                print("🔴 [ChatViewModel] Error in sendMessage:")
+                print("🔴 [ChatViewModel] Error: \(error)")
+                print("🔴 [ChatViewModel] Error type: \(type(of: error))")
+                print("🔴 [ChatViewModel] Error localized: \(error.localizedDescription)")
+                if let nsError = error as NSError? {
+                    print("🔴 [ChatViewModel] NSError domain: \(nsError.domain)")
+                    print("🔴 [ChatViewModel] NSError code: \(nsError.code)")
+                    print("🔴 [ChatViewModel] NSError userInfo: \(nsError.userInfo)")
+                }
+
                 await MainActor.run {
                     // Create more user-friendly error messages
                     var errorMessage = "Failed to get response"
@@ -162,6 +202,9 @@ class ChatViewModel: ObservableObject {
         // Toggle: if already in this mode, switch back to standard
         if currentMode == mode {
             currentMode = .standard
+            if mode == .quiz {
+                exitQuizMode()
+            }
         } else {
             currentMode = mode
             if mode == .mimic {
@@ -284,6 +327,8 @@ class ChatViewModel: ObservableObject {
         // Start streaming response with frustration signal
         streamingTask = Task {
             do {
+                print("🟡 [ChatViewModel] Starting frustration signal stream...")
+
                 // Send empty prompt but with frustration signal set
                 let stream = try await anthropicService.streamMessage(
                     prompt: "Please continue helping me with this topic.",
@@ -295,6 +340,8 @@ class ChatViewModel: ObservableObject {
                     sessionTimerDescription: sessionTimer.getSessionDescription(),
                     frustrationSignal: true
                 )
+
+                print("🟢 [ChatViewModel] Frustration signal stream obtained...")
 
                 var fullResponse = ""
                 for try await chunk in stream {
@@ -322,6 +369,16 @@ class ChatViewModel: ObservableObject {
                     self.streamingMessageContent = ""
                 }
             } catch {
+                print("🔴 [ChatViewModel] Error in sendFrustrationSignal:")
+                print("🔴 [ChatViewModel] Error: \(error)")
+                print("🔴 [ChatViewModel] Error type: \(type(of: error))")
+                print("🔴 [ChatViewModel] Error localized: \(error.localizedDescription)")
+                if let nsError = error as NSError? {
+                    print("🔴 [ChatViewModel] NSError domain: \(nsError.domain)")
+                    print("🔴 [ChatViewModel] NSError code: \(nsError.code)")
+                    print("🔴 [ChatViewModel] NSError userInfo: \(nsError.userInfo)")
+                }
+
                 await MainActor.run {
                     // Create more user-friendly error messages
                     var errorMessage = "Failed to get response"
@@ -343,6 +400,112 @@ class ChatViewModel: ObservableObject {
                         self.messages.removeLast()
                     }
                 }
+            }
+        }
+    }
+
+    // MARK: - Quiz Methods
+
+    func selectQuizType(_ type: QuizType) {
+        guard let topic = pendingQuizTopic else { return }
+
+        // Create new quiz session
+        quizSession = QuizSession(topic: topic, quizType: type)
+        isShowingQuizTypeSelection = false
+        pendingQuizTopic = nil
+
+        // Send message to start quiz
+        inputText = "Let's start a \(type.displayName) quiz on \(topic)."
+        sendMessage()
+    }
+
+    func submitQuizAnswer(_ answer: String) {
+        guard quizSession != nil else { return }
+
+        hasSubmittedCurrentAnswer = true
+        inputText = answer
+        sendMessage()
+
+        // Reset selection after sending
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            self.selectedMultipleChoiceAnswer = nil
+        }
+    }
+
+    func exitQuizMode() {
+        quizSession = nil
+        selectedMultipleChoiceAnswer = nil
+        hasSubmittedCurrentAnswer = false
+        pendingQuizTopic = nil
+        currentMode = .standard
+    }
+
+    private func parseQuizResponse(from content: String) -> QuizResponse? {
+        return QuizResponseParser.parseJSON(from: content)
+    }
+
+    private func handleQuizResponse(_ quizResponse: QuizResponse) {
+        guard let session = quizSession else { return }
+
+        switch quizResponse.type {
+        case .quizStart:
+            // Quiz is starting - no action needed, session already created
+            break
+
+        case .question:
+            // New question received
+            if let number = quizResponse.number,
+               let total = quizResponse.total,
+               let question = quizResponse.question,
+               let questionTypeString = quizResponse.questionType,
+               let questionType = QuizType(rawValue: questionTypeString) {
+
+                let quizQuestion = QuizQuestion(
+                    number: number,
+                    total: total,
+                    question: question,
+                    questionType: questionType,
+                    options: quizResponse.options,
+                    correctAnswer: quizResponse.correctAnswer
+                )
+
+                session.addQuestion(quizQuestion)
+                hasSubmittedCurrentAnswer = false
+            }
+
+        case .feedback:
+            // Feedback for current question
+            if let isCorrect = quizResponse.isCorrect,
+               let explanation = quizResponse.explanation,
+               let currentQuestion = session.currentQuestion {
+
+                session.updateCurrentQuestion(
+                    userAnswer: currentQuestion.userAnswer ?? "",
+                    isCorrect: isCorrect,
+                    feedback: explanation
+                )
+
+                // Move to next question after a short delay
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    session.moveToNextQuestion()
+                }
+            }
+
+        case .quizComplete:
+            // Quiz is complete
+            if let score = quizResponse.score,
+               let percentage = quizResponse.percentage,
+               let strengths = quizResponse.strengths,
+               let weaknesses = quizResponse.weaknesses,
+               let improvementPlan = quizResponse.improvementPlan {
+
+                session.completeQuiz(
+                    score: score,
+                    percentage: percentage,
+                    strengths: strengths,
+                    weaknesses: weaknesses,
+                    improvementPlan: improvementPlan
+                )
             }
         }
     }
