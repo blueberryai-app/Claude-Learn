@@ -13,6 +13,7 @@ struct Blueberry_LearnApp: App {
         WindowGroup {
             SpacesGridView()
                 .preferredColorScheme(.light) // For POC, use light mode
+                .fontDesign(.serif)
         }
     }
 }
