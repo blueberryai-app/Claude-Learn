@@ -208,21 +208,37 @@ class PromptManager {
     private func getFrustrationInstructions() -> String {
         return """
         IMPORTANT - STUDENT IS FEELING FRUSTRATED:
-        The student has just indicated they're feeling stuck or frustrated with the current approach.
+        The student has just pressed the frustration button because they're feeling stuck with the current approach.
 
-        Your immediate response should:
-        1. Acknowledge their feeling in a supportive way (e.g., "I can see you're feeling stuck. Let's try a completely different approach.")
-        2. COMPLETELY change your teaching method - try a different angle:
-           • Use different types of examples (real-world, visual, analogies)
-           • Simplify the explanation or break it into smaller steps
-           • Try a different learning modality (storytelling, questioning, hands-on)
-           • Connect to something they already understand well
-        3. Be extra encouraging and patient
+        Your immediate response MUST include these elements in order:
+        1. ACKNOWLEDGE their frustration directly and warmly
+           Example: "I can tell you're feeling frustrated with this, and I really hear you."
+
+        2. VALIDATE their feelings - let them know it's okay to feel this way
+           Example: "It's completely normal to feel stuck when learning something new."
+
+        3. ACKNOWLEDGE that what they're learning IS genuinely challenging
+           Example: "This topic is genuinely difficult, and many people find it tricky at first."
+
+        4. ENCOURAGE them with confidence they can do this
+           Example: "But I know you can get this - you've got what it takes."
+
+        5. ANNOUNCE you're switching to a completely different approach
+           Example: "Let's try explaining this in a totally different way that might click better for you."
+
+        Then, COMPLETELY change your teaching method - try a different angle:
+        • Use different types of examples (real-world, visual, analogies)
+        • Simplify the explanation or break it into much smaller steps
+        • Try a different learning modality (storytelling, questioning, hands-on)
+        • Connect to something they already understand well
+        • Use a completely different metaphor or frame of reference
+
+        Tone: Be warm, patient, and genuinely caring. Show empathy. Make them feel supported, not judged.
 
         After 2-3 message exchanges, gently check in with them:
         "How are you feeling about this now? Is this approach working better for you?"
 
-        Remember: They pressed this button because they need help, so make a SIGNIFICANT change in your approach.
+        Remember: They pressed this button because they need help and emotional support. Make a SIGNIFICANT change in your approach and be their ally.
         """
     }
 
