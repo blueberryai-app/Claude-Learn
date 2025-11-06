@@ -15,14 +15,51 @@ struct SpaceDetailView: View {
     var body: some View {
         ZStack(alignment: .bottomTrailing) {
             VStack(spacing: 0) {
-                // Conversation history
-                if !viewModel.sessions.isEmpty {
-                    VStack(alignment: .leading, spacing: 12) {
+                // Files and Instructions sections - ALWAYS visible at top
+                HStack(spacing: 16) {
+                    // Files section
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Files")
+                            .font(.system(size: 17, weight: .semibold))
+                        Text("Add PDFs, docs, or other text to use in this project.")
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(16)
+                    .background(Color(red: 0.96, green: 0.96, blue: 0.96))
+                    .cornerRadius(12)
+
+                    // Instructions section
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Instructions")
+                            .font(.system(size: 17, weight: .semibold))
+                        Text("Add instructions to tailor Claude's responses.")
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(16)
+                    .background(Color(red: 0.96, green: 0.96, blue: 0.96))
+                    .cornerRadius(12)
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 16)
+                .padding(.bottom, 20)
+
+                // Chat history section
+                VStack(alignment: .leading, spacing: 0) {
+                    if !viewModel.sessions.isEmpty {
+                        // Header for chat sessions
                         Text("Your chats")
                             .font(.system(size: 15))
                             .foregroundColor(.primary)
                             .padding(.horizontal, 20)
+                            .padding(.bottom, 12)
 
+                        // Sessions list with constrained ScrollView
                         ScrollView {
                             VStack(spacing: 12) {
                                 ForEach(viewModel.sessions) { session in
@@ -39,65 +76,29 @@ struct SpaceDetailView: View {
                                 }
                             }
                             .padding(.horizontal, 20)
+                            .padding(.bottom, 20)
                         }
-                    }
-                    .padding(.top, 16)
-                    .padding(.bottom, 20)
-                } else {
-                    // Empty state
-                    Spacer()
+                    } else {
+                        // Empty state centered in remaining space
+                        Spacer()
 
-                    VStack(spacing: 16) {
-                        Image("message_bubbles")
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                            .frame(width: 80, height: 80)
+                        VStack(spacing: 16) {
+                            Image("message_bubbles")
+                                .resizable()
+                                .aspectRatio(contentMode: .fit)
+                                .frame(width: 80, height: 80)
 
-                        Text("Chats you've had with Claude will show up here.")
-                            .font(.system(size: 17))
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 40)
-                    }
-
-                    Spacer()
-                }
-
-                // Files and Instructions sections (only show when sessions exist)
-                if !viewModel.sessions.isEmpty {
-                    HStack(spacing: 16) {
-                        // Files section
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Files")
-                                .font(.system(size: 17, weight: .semibold))
-                            Text("Add PDFs, docs, or other text to use in this project.")
-                                .font(.system(size: 14))
+                            Text("Chats you've had with Claude will show up here.")
+                                .font(.system(size: 17))
                                 .foregroundColor(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, 40)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(16)
-                        .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                        .cornerRadius(12)
 
-                        // Instructions section
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Instructions")
-                                .font(.system(size: 17, weight: .semibold))
-                            Text("Add instructions to tailor Claude's responses.")
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(16)
-                        .background(Color(red: 0.96, green: 0.96, blue: 0.96))
-                        .cornerRadius(12)
+                        Spacer()
                     }
-                    .padding(.horizontal, 20)
-                    .padding(.bottom, 20)
                 }
-
+                .frame(maxHeight: .infinity)
             }
 
             // Floating action button
