@@ -28,7 +28,7 @@ struct SpaceDetailView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(16)
-                    .background(Color(red: 0.96, green: 0.96, blue: 0.96))
+                    .background(Color.cardBackground)
                     .cornerRadius(12)
 
                     // Instructions section
@@ -42,7 +42,7 @@ struct SpaceDetailView: View {
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(16)
-                    .background(Color(red: 0.96, green: 0.96, blue: 0.96))
+                    .background(Color.cardBackground)
                     .cornerRadius(12)
                 }
                 .padding(.horizontal, 20)
@@ -111,7 +111,7 @@ struct SpaceDetailView: View {
                     .font(.system(size: 24, weight: .medium))
                     .foregroundColor(.white)
                     .frame(width: 56, height: 56)
-                    .background(Color(red: 0.76, green: 0.44, blue: 0.35))
+                    .background(Color.blueberryOrange)
                     .clipShape(Circle())
                     .shadow(color: Color.black.opacity(0.2), radius: 8, x: 0, y: 4)
             }

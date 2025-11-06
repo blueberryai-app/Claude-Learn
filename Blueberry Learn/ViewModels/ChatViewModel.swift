@@ -245,10 +245,10 @@ class ChatViewModel: ObservableObject {
         generator.impactOccurred()
 
         // Show toast message
-        frustrationToastMessage = "Switching approach..."
+        frustrationToastMessage = "Feeling frustrated..."
 
         // Auto-dismiss toast after 2 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
             self.frustrationToastMessage = nil
         }
 

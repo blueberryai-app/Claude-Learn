@@ -34,15 +34,15 @@ struct SpacesGridView: View {
                     // Search field
                     HStack {
                         Image(systemName: "magnifyingglass")
-                            .foregroundColor(Color(red: 0.6, green: 0.6, blue: 0.63))
+                            .foregroundColor(Color.iconSecondary)
                             .font(.system(size: 15, weight: .regular))
                         TextField("Search", text: $viewModel.searchText)
                             .font(.system(size: 16))
-                            .foregroundColor(Color(red: 0.13, green: 0.13, blue: 0.13))
+                            .foregroundColor(Color.textPrimary)
                     }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 11)
-                    .background(Color(red: 0.95, green: 0.95, blue: 0.97))
+                    .background(Color.searchBackground)
                     .cornerRadius(10)
 
                     // Add button
@@ -51,7 +51,7 @@ struct SpacesGridView: View {
                     }) {
                         Image(systemName: "plus")
                             .font(.system(size: 22, weight: .regular))
-                            .foregroundColor(Color(red: 0.13, green: 0.13, blue: 0.13))
+                            .foregroundColor(Color.textPrimary)
                     }
                 }
                 .padding(.horizontal, 16)
@@ -85,7 +85,7 @@ struct SpaceTile: View {
                 // Fallback to SF Symbol for custom spaces
                 Image(systemName: space.icon)
                     .font(.system(size: 28, weight: .light))
-                    .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.2))
+                    .foregroundColor(Color.iconDark)
                     .frame(width: 28, height: 28)
             }
 
@@ -99,7 +99,7 @@ struct SpaceTile: View {
         .frame(maxWidth: .infinity)
         .frame(height: 120)
         .padding(.horizontal, 12)
-        .background(Color(red: 0.93, green: 0.91, blue: 0.87))
+        .background(Color.tileBackground)
         .cornerRadius(16)
     }
 }

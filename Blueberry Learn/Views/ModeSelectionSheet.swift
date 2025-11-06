@@ -101,7 +101,7 @@ struct AttachmentOption: View {
                 .font(.system(size: 26))
                 .foregroundColor(.primary)
                 .frame(width: 90, height: 64)
-                .background(Color(red: 0.96, green: 0.96, blue: 0.96))
+                .background(Color.cardBackground)
                 .cornerRadius(12)
 
             Text(label)

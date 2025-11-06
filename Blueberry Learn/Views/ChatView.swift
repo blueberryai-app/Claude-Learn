@@ -84,7 +84,7 @@ struct ChatView: View {
                                 .font(.system(size: 18, weight: .semibold))
                                 .foregroundColor(.white)
                                 .frame(width: 40, height: 40)
-                                .background(viewModel.inputText.isEmpty ? Color.gray : Color(red: 0.76, green: 0.44, blue: 0.35))
+                                .background(viewModel.inputText.isEmpty ? Color.gray : Color.blueberryOrange)
                                 .clipShape(Circle())
                         }
                         .disabled(viewModel.inputText.isEmpty)
@@ -315,7 +315,7 @@ struct ChatView: View {
                     .foregroundColor(.white)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 10)
-                    .background(Color.red.opacity(0.9))
+                    .background(Color.blueberryOrange)
                     .cornerRadius(20)
                     .padding(.top, 8)
                     .transition(.move(edge: .top).combined(with: .opacity))
@@ -388,7 +388,7 @@ struct EmptyStateView: View {
 
             Text("What are we learning today?")
                 .font(.system(size: 22, weight: .regular))
-                .foregroundColor(Color(red: 0.4, green: 0.4, blue: 0.4))
+                .foregroundColor(Color.textSecondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(.top, 100)
