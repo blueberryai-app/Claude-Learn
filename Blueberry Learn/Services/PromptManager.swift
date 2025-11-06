@@ -135,33 +135,46 @@ class PromptManager {
     private func getLensInstructions(_ lens: LearningLens) -> String {
         let lensPrompts: [String: String] = [
             "Star Wars": """
-            Frame concepts using Star Wars analogies and references.
-            Compare ideas to Force powers, starship systems, galactic politics, or Jedi philosophy.
-            Use familiar characters and situations to illustrate points.
+            Frame concepts using Star Wars analogies and references:
+            - Compare ideas to Force powers (telekinesis, mind tricks, Force sensitivity)
+            - Reference starship systems (hyperdrive, shields, blasters, lightsabers)
+            - Use specific characters: Luke, Leia, Han Solo, Yoda, Darth Vader, Rey, Obi-Wan
+            - Compare difficult challenges to Death Star trench runs or lightsaber duels
+            - Reference planets: Tatooine, Hoth, Endor, Naboo, Coruscant
+            - Use Jedi training, Padawan learning, and Master-apprentice relationships
             """,
 
-            "Sports": """
-            Use sports metaphors and athletic examples.
-            Compare learning to training, practice, and competition.
-            Reference famous athletes, games, and sporting strategies.
+            "Minecraft": """
+            Frame concepts using Minecraft mechanics and gameplay:
+            - Compare building knowledge to crafting recipes and construction
+            - Reference specific blocks: redstone, obsidian, diamond, TNT, bedrock
+            - Use mining, gathering resources, and exploring caves as metaphors
+            - Compare problem-solving to redstone circuits and automated systems
+            - Reference game modes: survival, creative, hardcore
+            - Use enchanting, brewing potions, and the Nether/End dimensions
+            - Talk about mobs: creepers, zombies, Endermen, villagers
             """,
 
-            "History": """
-            Connect concepts to historical events and figures.
-            Draw parallels to historical situations and outcomes.
-            Use historical context to enrich understanding.
+            "Pokemon": """
+            Frame concepts using Pokemon training and battles:
+            - Compare learning to training Pokemon and gaining experience points
+            - Reference type advantages: fire beats grass, water beats fire, etc.
+            - Use evolution as a metaphor for growth and mastery
+            - Reference specific Pokemon: Pikachu, Charizard, Mewtwo, Eevee, Snorlax, Gyarados
+            - Compare skill-building to learning new moves and abilities
+            - Use gym battles, badges, and becoming a Pokemon Master
+            - Reference status effects, strengths/weaknesses, and battle strategy
             """,
 
-            "Pop Culture": """
-            Reference current trends, memes, and popular media.
-            Use contemporary examples from movies, music, and social media.
-            Keep references appropriate and educational.
-            """,
-
-            "Nature": """
-            Use natural phenomena and ecosystems as examples.
-            Draw parallels to animal behaviors and natural processes.
-            Connect concepts to environmental observations.
+            "Marvel Avengers": """
+            Frame concepts using Marvel superheroes and powers:
+            - Compare abilities to superpowers: Iron Man's technology, Hulk's strength, Spider-Man's agility
+            - Reference specific Avengers: Captain America, Thor, Black Widow, Hawkeye, Doctor Strange
+            - Use the Infinity Stones as metaphors for different types of knowledge/power
+            - Compare teamwork to Avengers assembling and working together
+            - Reference villains: Thanos, Loki, Ultron when discussing challenges/obstacles
+            - Use origin stories to explain how skills develop over time
+            - Compare complex problems to saving the world from threats
             """
         ]
 

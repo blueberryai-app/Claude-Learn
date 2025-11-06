@@ -45,9 +45,9 @@ struct LearningLens: Codable {
 
     static let availableLenses = [
         LearningLens(name: "Star Wars", themeDescription: "Learn through Star Wars analogies"),
-        LearningLens(name: "Sports", themeDescription: "Sports metaphors and examples"),
-        LearningLens(name: "History", themeDescription: "Historical context and examples"),
-        LearningLens(name: "Pop Culture", themeDescription: "Modern references and memes"),
+        LearningLens(name: "Minecraft", themeDescription: "Learn through Minecraft building and crafting"),
+        LearningLens(name: "Pokemon", themeDescription: "Learn through Pokemon battles and training"),
+        LearningLens(name: "Marvel Avengers", themeDescription: "Learn through Marvel superheroes and powers"),
         LearningLens(name: "None", themeDescription: "No thematic lens")
     ]
 }
