@@ -2,12 +2,14 @@ import SwiftUI
 
 struct ChatView: View {
     let space: LearningSpace
+    let sessionId: UUID?
     @StateObject private var viewModel: ChatViewModel
     @FocusState private var isInputFocused: Bool
 
-    init(space: LearningSpace) {
+    init(space: LearningSpace, sessionId: UUID? = nil) {
         self.space = space
-        self._viewModel = StateObject(wrappedValue: ChatViewModel(space: space))
+        self.sessionId = sessionId
+        self._viewModel = StateObject(wrappedValue: ChatViewModel(space: space, sessionId: sessionId))
     }
 
     var body: some View {
@@ -124,16 +126,16 @@ struct ChatView: View {
                                 .frame(width: 32, height: 32)
                         }
 
-                        // Custom Entity
+                        // Mimic Mode
                         Button(action: {
-                            viewModel.switchMode(.customEntity)
+                            viewModel.switchMode(.mimic)
                         }) {
                             Image("custom_entity")
                                 .renderingMode(.template)
                                 .resizable()
                                 .aspectRatio(contentMode: .fit)
                                 .frame(width: 24, height: 24)
-                                .foregroundColor(viewModel.currentMode == .customEntity ? .blue : .primary)
+                                .foregroundColor(viewModel.currentMode == .mimic ? .blue : .primary)
                                 .frame(width: 32, height: 32)
                         }
 
@@ -176,7 +178,7 @@ struct ChatView: View {
         .sheet(isPresented: $viewModel.isShowingModeSelection) {
             ModeSelectionSheet(viewModel: viewModel)
         }
-        .alert("Custom Entity", isPresented: $viewModel.showCustomEntityAlert) {
+        .alert("Mimic Mode", isPresented: $viewModel.showCustomEntityAlert) {
             TextField("Entity name", text: $viewModel.customEntityName)
             Button("OK") { }
             Button("Cancel", role: .cancel) {

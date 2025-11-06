@@ -15,18 +15,29 @@ class ChatViewModel: ObservableObject {
     @Published var errorMessage: String?
 
     let space: LearningSpace
+    var session: ChatSession
     private let storageService = StorageService.shared
     private let anthropicService = AnthropicService()
     private let promptManager = PromptManager.shared
     private var streamingTask: Task<Void, Never>?
 
-    init(space: LearningSpace) {
+    init(space: LearningSpace, sessionId: UUID? = nil) {
         self.space = space
+
+        // Load existing session or create new one
+        if let sessionId = sessionId,
+           let existingSession = storageService.getSession(sessionId, from: space.id) {
+            self.session = existingSession
+        } else {
+            // Create a new session if no sessionId provided
+            self.session = storageService.createSession(for: space.id)
+        }
+
         loadMessages()
     }
 
     func loadMessages() {
-        messages = storageService.loadMessages(for: space.id)
+        messages = session.messages
     }
 
     func sendMessage() {
@@ -44,7 +55,12 @@ class ChatViewModel: ObservableObject {
             activeLens: currentLens?.name
         )
         messages.append(userMessage)
-        storageService.addMessage(userMessage, to: space.id)
+
+        // Update session with new message
+        session.messages.append(userMessage)
+        session.lastMessageDate = Date()
+        session.updateTitle() // Update title if this is first message
+        storageService.updateSession(session)
 
         let currentInput = inputText
         inputText = ""
@@ -62,6 +78,9 @@ class ChatViewModel: ObservableObject {
         )
         messages.append(assistantMessage)
 
+        // Add empty assistant message to session
+        session.messages.append(assistantMessage)
+
         // Start streaming response
         streamingTask = Task {
             do {
@@ -71,7 +90,7 @@ class ChatViewModel: ObservableObject {
                     space: space,
                     mode: currentMode,
                     lens: currentLens,
-                    customEntityName: currentMode == .customEntity ? customEntityName : nil
+                    customEntityName: currentMode == .mimic ? customEntityName : nil
                 )
 
                 var fullResponse = ""
@@ -90,7 +109,11 @@ class ChatViewModel: ObservableObject {
                 await MainActor.run {
                     if let lastIndex = self.messages.indices.last {
                         self.messages[lastIndex].content = fullResponse
-                        self.storageService.addMessage(self.messages[lastIndex], to: self.space.id)
+
+                        // Update session with assistant's response
+                        self.session.messages[lastIndex].content = fullResponse
+                        self.session.lastMessageDate = Date()
+                        self.storageService.updateSession(self.session)
                     }
                     self.isLoading = false
                     self.streamingMessageContent = ""
@@ -123,7 +146,7 @@ class ChatViewModel: ObservableObject {
 
     func switchMode(_ mode: LearningMode) {
         currentMode = mode
-        if mode == .customEntity {
+        if mode == .mimic {
             showCustomEntityAlert = true
         }
     }

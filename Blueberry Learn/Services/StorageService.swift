@@ -6,6 +6,7 @@ class StorageService {
 
     private let spacesKey = "learningSpaces"
     private let messagesKeyPrefix = "messages_"
+    private let sessionsKeyPrefix = "sessions_"
 
     private init() {}
 
@@ -67,6 +68,54 @@ class StorageService {
         var messages = loadMessages(for: spaceId)
         messages.append(message)
         saveMessages(messages, for: spaceId)
+    }
+
+    // MARK: - Chat Sessions
+    func saveSessions(_ sessions: [ChatSession], for spaceId: UUID) {
+        let key = sessionsKeyPrefix + spaceId.uuidString
+        if let encoded = try? JSONEncoder().encode(sessions) {
+            userDefaults.set(encoded, forKey: key)
+        }
+    }
+
+    func loadSessions(for spaceId: UUID) -> [ChatSession] {
+        let key = sessionsKeyPrefix + spaceId.uuidString
+        guard let data = userDefaults.data(forKey: key),
+              let sessions = try? JSONDecoder().decode([ChatSession].self, from: data) else {
+            return []
+        }
+        return sessions.sorted { $0.lastMessageDate > $1.lastMessageDate }
+    }
+
+    func createSession(for spaceId: UUID) -> ChatSession {
+        let session = ChatSession(spaceId: spaceId)
+        var sessions = loadSessions(for: spaceId)
+        sessions.append(session)
+        saveSessions(sessions, for: spaceId)
+        return session
+    }
+
+    func updateSession(_ session: ChatSession) {
+        var sessions = loadSessions(for: session.spaceId)
+        if let index = sessions.firstIndex(where: { $0.id == session.id }) {
+            sessions[index] = session
+            saveSessions(sessions, for: session.spaceId)
+        } else {
+            // If session doesn't exist, add it
+            sessions.append(session)
+            saveSessions(sessions, for: session.spaceId)
+        }
+    }
+
+    func deleteSession(_ sessionId: UUID, from spaceId: UUID) {
+        var sessions = loadSessions(for: spaceId)
+        sessions.removeAll { $0.id == sessionId }
+        saveSessions(sessions, for: spaceId)
+    }
+
+    func getSession(_ sessionId: UUID, from spaceId: UUID) -> ChatSession? {
+        let sessions = loadSessions(for: spaceId)
+        return sessions.first { $0.id == sessionId }
     }
 
     // MARK: - Clear Data (for development)

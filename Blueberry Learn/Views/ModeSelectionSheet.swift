@@ -27,7 +27,7 @@ struct ModeSelectionSheet: View {
                                 isSelected: viewModel.currentMode == mode,
                                 action: {
                                     viewModel.switchMode(mode)
-                                    if mode != .customEntity {
+                                    if mode != .mimic {
                                         dismiss()
                                     }
                                 }

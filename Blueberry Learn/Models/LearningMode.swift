@@ -1,10 +1,10 @@
 import Foundation
 
-enum LearningMode: String, CaseIterable, Codable {
+enum LearningMode: String, CaseIterable, Codable, Hashable {
     case standard = "Standard"
     case writing = "Writing Mode"
     case debate = "Debate Me"
-    case customEntity = "Custom Entity"
+    case mimic = "Mimic"
     case quiz = "Quiz Me"
 
     var icon: String {
@@ -15,7 +15,7 @@ enum LearningMode: String, CaseIterable, Codable {
             return "pencil.and.outline"
         case .debate:
             return "person.2.fill"
-        case .customEntity:
+        case .mimic:
             return "theatermasks"
         case .quiz:
             return "questionmark.circle"
@@ -30,7 +30,7 @@ enum LearningMode: String, CaseIterable, Codable {
             return "Get help with writing and composition"
         case .debate:
             return "Engage in constructive debate"
-        case .customEntity:
+        case .mimic:
             return "Chat with a custom character"
         case .quiz:
             return "Test your knowledge with questions"

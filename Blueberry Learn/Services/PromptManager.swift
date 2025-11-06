@@ -106,10 +106,10 @@ class PromptManager {
             - Mix question types (multiple choice, short answer, problem-solving)
             """
 
-        case .customEntity:
+        case .mimic:
             let entity = entityName ?? "the specified character"
             return """
-            CUSTOM ENTITY MODE - Acting as \(entity):
+            MIMIC MODE - Acting as \(entity):
             - Embody the personality and knowledge of \(entity)
             - Maintain character while being educational
             - Use speech patterns and perspectives appropriate to \(entity)
