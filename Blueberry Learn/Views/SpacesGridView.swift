@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 struct SpacesGridView: View {
     @StateObject private var viewModel = SpacesListViewModel()
@@ -78,8 +79,8 @@ struct SpaceTile: View {
                 Image(space.icon)
                     .resizable()
                     .aspectRatio(contentMode: .fit)
-                    .frame(width: 28, height: 28)
-                    .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.2))
+                    .frame(width: 40, height: 40)
+                    .opacity(0.8)
             } else {
                 // Fallback to SF Symbol for custom spaces
                 Image(systemName: space.icon)

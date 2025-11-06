@@ -103,54 +103,118 @@ struct ChatView: View {
 
                         // Writing Mode
                         Button(action: {
-                            viewModel.switchMode(.writing)
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                viewModel.switchMode(.writing)
+                            }
                         }) {
-                            Image("writing_mode")
-                                .renderingMode(.template)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 24, height: 24)
-                                .foregroundColor(viewModel.currentMode == .writing ? .blue : .primary)
-                                .frame(width: 32, height: 32)
+                            HStack(spacing: 6) {
+                                Image("writing_mode")
+                                    .renderingMode(.template)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(viewModel.currentMode == .writing ? .blue : .primary)
+
+                                if viewModel.currentMode == .writing {
+                                    Text("Writing Mode")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(.blue)
+                                        .transition(.opacity.combined(with: .scale(scale: 0.8, anchor: .leading)))
+                                }
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(viewModel.currentMode == .writing ? Color.blue.opacity(0.1) : Color.clear)
+                            )
                         }
 
                         // Debate Me
                         Button(action: {
-                            viewModel.switchMode(.debate)
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                viewModel.switchMode(.debate)
+                            }
                         }) {
-                            Image("debate_mode")
-                                .renderingMode(.template)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 24, height: 24)
-                                .foregroundColor(viewModel.currentMode == .debate ? .blue : .primary)
-                                .frame(width: 32, height: 32)
+                            HStack(spacing: 6) {
+                                Image("debate_mode")
+                                    .renderingMode(.template)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(viewModel.currentMode == .debate ? .blue : .primary)
+
+                                if viewModel.currentMode == .debate {
+                                    Text("Debate Me")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(.blue)
+                                        .transition(.opacity.combined(with: .scale(scale: 0.8, anchor: .leading)))
+                                }
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(viewModel.currentMode == .debate ? Color.blue.opacity(0.1) : Color.clear)
+                            )
                         }
 
                         // Mimic Mode
                         Button(action: {
-                            viewModel.switchMode(.mimic)
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                viewModel.switchMode(.mimic)
+                            }
                         }) {
-                            Image("custom_entity")
-                                .renderingMode(.template)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 24, height: 24)
-                                .foregroundColor(viewModel.currentMode == .mimic ? .blue : .primary)
-                                .frame(width: 32, height: 32)
+                            HStack(spacing: 6) {
+                                Image("custom_entity")
+                                    .renderingMode(.template)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(viewModel.currentMode == .mimic ? .blue : .primary)
+
+                                if viewModel.currentMode == .mimic {
+                                    Text("Mimic")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(.blue)
+                                        .transition(.opacity.combined(with: .scale(scale: 0.8, anchor: .leading)))
+                                }
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(viewModel.currentMode == .mimic ? Color.blue.opacity(0.1) : Color.clear)
+                            )
                         }
 
                         // Quiz Me
                         Button(action: {
-                            viewModel.switchMode(.quiz)
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                viewModel.switchMode(.quiz)
+                            }
                         }) {
-                            Image("quiz_me")
-                                .renderingMode(.template)
-                                .resizable()
-                                .aspectRatio(contentMode: .fit)
-                                .frame(width: 24, height: 24)
-                                .foregroundColor(viewModel.currentMode == .quiz ? .blue : .primary)
-                                .frame(width: 32, height: 32)
+                            HStack(spacing: 6) {
+                                Image("quiz_me")
+                                    .renderingMode(.template)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(viewModel.currentMode == .quiz ? .blue : .primary)
+
+                                if viewModel.currentMode == .quiz {
+                                    Text("Quiz Me")
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(.blue)
+                                        .transition(.opacity.combined(with: .scale(scale: 0.8, anchor: .leading)))
+                                }
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(viewModel.currentMode == .quiz ? Color.blue.opacity(0.1) : Color.clear)
+                            )
                         }
 
                         Spacer()
