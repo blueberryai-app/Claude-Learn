@@ -159,9 +159,14 @@ class ChatViewModel: ObservableObject {
     }
 
     func switchMode(_ mode: LearningMode) {
-        currentMode = mode
-        if mode == .mimic {
-            showCustomEntityAlert = true
+        // Toggle: if already in this mode, switch back to standard
+        if currentMode == mode {
+            currentMode = .standard
+        } else {
+            currentMode = mode
+            if mode == .mimic {
+                showCustomEntityAlert = true
+            }
         }
     }
 
