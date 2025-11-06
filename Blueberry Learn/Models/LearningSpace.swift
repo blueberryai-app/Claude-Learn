@@ -24,27 +24,27 @@ extension LearningSpace {
         [
             LearningSpace(
                 name: "Physics - Mech",
-                icon: "function",
+                icon: "physics_space_icon",
                 systemPrompt: "You are a physics tutor specializing in mechanics. Help students understand forces, motion, energy, and momentum."
             ),
             LearningSpace(
                 name: "Electrical Eng",
-                icon: "bolt.fill",
+                icon: "electrical_eng_space_icon",
                 systemPrompt: "You are an electrical engineering tutor. Help students understand circuits, signals, and electrical systems."
             ),
             LearningSpace(
                 name: "Literature",
-                icon: "books.vertical.fill",
+                icon: "literature_space_icon",
                 systemPrompt: "You are a literature tutor. Help students analyze texts, understand themes, and improve their literary analysis skills."
             ),
             LearningSpace(
                 name: "Writing",
-                icon: "pencil",
+                icon: "writing_space_icon",
                 systemPrompt: "You are a writing coach. Help students improve their writing skills, from structure to style."
             ),
             LearningSpace(
                 name: "Biology",
-                icon: "leaf.fill",
+                icon: "biology_space_icon",
                 systemPrompt: "You are a biology tutor. Help students understand life sciences, from cells to ecosystems."
             )
         ]

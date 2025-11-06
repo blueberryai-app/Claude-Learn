@@ -169,9 +169,11 @@ struct ChatView: View {
                             .font(.system(size: 20))
                     }
                     Button(action: {}) {
-                        Image(systemName: "arrow.clockwise")
+                        Image(systemName: "exclamationmark.arrow.trianglehead.2.clockwise.rotate.90")
                             .font(.system(size: 20))
+
                     }
+                    .tint(.red)
                 }
             }
         }

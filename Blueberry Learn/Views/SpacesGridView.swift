@@ -14,7 +14,7 @@ struct SpacesGridView: View {
             VStack(spacing: 0) {
                 // Main content
                 ScrollView {
-                    LazyVGrid(columns: columns, spacing: 16) {
+                    LazyVGrid(columns: columns, spacing: 12) {
                         ForEach(viewModel.filteredSpaces) { space in
                             SpaceTile(space: space)
                                 .onTapGesture {
@@ -23,22 +23,25 @@ struct SpacesGridView: View {
                                 }
                         }
                     }
-                    .padding()
+                    .padding(.horizontal, 16)
+                    .padding(.top, 16)
+                    .padding(.bottom, 8)
                 }
 
                 // Bottom toolbar
-                HStack(spacing: 16) {
+                HStack(spacing: 12) {
                     // Search field
                     HStack {
                         Image(systemName: "magnifyingglass")
-                            .foregroundColor(.secondary)
-                            .font(.system(size: 16))
+                            .foregroundColor(Color(red: 0.6, green: 0.6, blue: 0.63))
+                            .font(.system(size: 15, weight: .regular))
                         TextField("Search", text: $viewModel.searchText)
-                            .font(.system(size: 17))
+                            .font(.system(size: 16))
+                            .foregroundColor(Color(red: 0.13, green: 0.13, blue: 0.13))
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 10)
-                    .background(Color(.systemGray6))
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 11)
+                    .background(Color(red: 0.95, green: 0.95, blue: 0.97))
                     .cornerRadius(10)
 
                     // Add button
@@ -46,12 +49,12 @@ struct SpacesGridView: View {
                         viewModel.isShowingCreateSpace = true
                     }) {
                         Image(systemName: "plus")
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(.primary)
+                            .font(.system(size: 22, weight: .regular))
+                            .foregroundColor(Color(red: 0.13, green: 0.13, blue: 0.13))
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.vertical, 12)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 14)
                 .background(Color(.systemBackground))
             }
             .navigationTitle("Learning Spaces")
@@ -69,23 +72,34 @@ struct SpaceTile: View {
     let space: LearningSpace
 
     var body: some View {
-        VStack(spacing: 12) {
-            Image(systemName: space.icon)
-                .font(.system(size: 40, weight: .light))
-                .foregroundColor(.primary)
-                .frame(height: 60)
+        VStack(spacing: 8) {
+            // Custom icon or fallback to SF Symbol
+            if UIImage(named: space.icon) != nil {
+                Image(space.icon)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 28, height: 28)
+                    .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.2))
+            } else {
+                // Fallback to SF Symbol for custom spaces
+                Image(systemName: space.icon)
+                    .font(.system(size: 28, weight: .light))
+                    .foregroundColor(Color(red: 0.2, green: 0.2, blue: 0.2))
+                    .frame(width: 28, height: 28)
+            }
 
             Text(space.name)
-                .font(.system(size: 17, weight: .regular))
+                .font(.system(size: 15, weight: .regular))
+                .foregroundColor(Color(red: 0.13, green: 0.13, blue: 0.13)) // Off-black
                 .multilineTextAlignment(.center)
                 .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
         }
-        .frame(maxWidth: .infinity, minHeight: 140)
-        .padding(.vertical, 24)
-        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity)
+        .frame(height: 120)
+        .padding(.horizontal, 12)
         .background(Color(red: 0.93, green: 0.91, blue: 0.87))
-        .cornerRadius(20)
+        .cornerRadius(16)
     }
 }
 

@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		297E91A92EBC53D900ECDDBF /* SwiftAnthropic in Frameworks */ = {isa = PBXBuildFile; productRef = 297E91A82EBC53D900ECDDBF /* SwiftAnthropic */; };
+		29AAE1B42EBC8B4C0049BDBE /* MarkdownUI in Frameworks */ = {isa = PBXBuildFile; productRef = 29AAE1B32EBC8B4C0049BDBE /* MarkdownUI */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -57,6 +58,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				297E91A92EBC53D900ECDDBF /* SwiftAnthropic in Frameworks */,
+				29AAE1B42EBC8B4C0049BDBE /* MarkdownUI in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -118,6 +120,7 @@
 			name = "Blueberry Learn";
 			packageProductDependencies = (
 				297E91A82EBC53D900ECDDBF /* SwiftAnthropic */,
+				29AAE1B32EBC8B4C0049BDBE /* MarkdownUI */,
 			);
 			productName = "Blueberry Learn";
 			productReference = 29FB87112EBBD7F100912190 /* Blueberry Learn.app */;
@@ -203,6 +206,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				297E91A72EBC53D900ECDDBF /* XCRemoteSwiftPackageReference "SwiftAnthropic" */,
+				29AAE1B22EBC8B4C0049BDBE /* XCRemoteSwiftPackageReference "swift-markdown-ui" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 29FB87122EBBD7F100912190 /* Products */;
@@ -597,6 +601,14 @@
 				minimumVersion = 1.4.0;
 			};
 		};
+		29AAE1B22EBC8B4C0049BDBE /* XCRemoteSwiftPackageReference "swift-markdown-ui" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/gonzalezreal/swift-markdown-ui";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.4.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -604,6 +616,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 297E91A72EBC53D900ECDDBF /* XCRemoteSwiftPackageReference "SwiftAnthropic" */;
 			productName = SwiftAnthropic;
+		};
+		29AAE1B32EBC8B4C0049BDBE /* MarkdownUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 29AAE1B22EBC8B4C0049BDBE /* XCRemoteSwiftPackageReference "swift-markdown-ui" */;
+			productName = MarkdownUI;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};
