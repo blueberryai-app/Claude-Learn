@@ -237,7 +237,7 @@ struct ChatView: View {
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)
                                     .frame(width: 24, height: 24)
-                                    .foregroundColor(viewModel.currentMode == .quiz ? .blue : (viewModel.isQuizLocked ? .gray : .primary))
+                                    .foregroundColor(viewModel.currentMode == .quiz ? .blue : .primary)
 
                                 if viewModel.currentMode == .quiz {
                                     Text("Quiz Me")
@@ -253,8 +253,6 @@ struct ChatView: View {
                                     .fill(viewModel.currentMode == .quiz ? Color.blue.opacity(0.1) : Color.clear)
                             )
                         }
-                        .disabled(viewModel.isQuizLocked)
-                        .opacity(viewModel.isQuizLocked ? 0.5 : 1.0)
 
                         Spacer()
                     }
@@ -283,17 +281,6 @@ struct ChatView: View {
 
             ToolbarItem(placement: .navigationBarTrailing) {
                 HStack(spacing: 16) {
-                    // Exit Quiz button when quiz is active
-                    if viewModel.quizSession != nil {
-                        Button(action: {
-                            viewModel.exitQuizMode()
-                        }) {
-                            Text("Exit Quiz")
-                                .font(.system(size: 14, weight: .medium))
-                                .foregroundColor(.red)
-                        }
-                    }
-
                     // Timer button - shows clock or progress
                     Button(action: {
                         if viewModel.sessionTimer.isActive {
