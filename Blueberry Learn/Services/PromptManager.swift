@@ -11,7 +11,8 @@ class PromptManager {
         mode: LearningMode,
         lens: LearningLens?,
         customEntityName: String? = nil,
-        sessionTimerDescription: String? = nil
+        sessionTimerDescription: String? = nil,
+        frustrationSignal: Bool = false
     ) -> String {
         var components: [String] = []
 
@@ -36,6 +37,11 @@ class PromptManager {
         // Timer instructions if active
         if let timerDesc = sessionTimerDescription {
             components.append(getTimerInstructions(timerDesc))
+        }
+
+        // Frustration signal - user needs a different approach
+        if frustrationSignal {
+            components.append(getFrustrationInstructions())
         }
 
         // General guidelines
@@ -182,6 +188,28 @@ class PromptManager {
           • Suggestions for future learning
         - Keep the conversation natural while being mindful of time constraints
         - The student can continue chatting after the timer ends if they wish
+        """
+    }
+
+    // Get frustration signal instructions
+    private func getFrustrationInstructions() -> String {
+        return """
+        IMPORTANT - STUDENT IS FEELING FRUSTRATED:
+        The student has just indicated they're feeling stuck or frustrated with the current approach.
+
+        Your immediate response should:
+        1. Acknowledge their feeling in a supportive way (e.g., "I can see you're feeling stuck. Let's try a completely different approach.")
+        2. COMPLETELY change your teaching method - try a different angle:
+           • Use different types of examples (real-world, visual, analogies)
+           • Simplify the explanation or break it into smaller steps
+           • Try a different learning modality (storytelling, questioning, hands-on)
+           • Connect to something they already understand well
+        3. Be extra encouraging and patient
+
+        After 2-3 message exchanges, gently check in with them:
+        "How are you feeling about this now? Is this approach working better for you?"
+
+        Remember: They pressed this button because they need help, so make a SIGNIFICANT change in your approach.
         """
     }
 

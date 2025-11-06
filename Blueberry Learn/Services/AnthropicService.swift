@@ -22,7 +22,8 @@ class AnthropicService {
         mode: LearningMode,
         lens: LearningLens?,
         customEntityName: String? = nil,
-        sessionTimerDescription: String? = nil
+        sessionTimerDescription: String? = nil,
+        frustrationSignal: Bool = false
     ) async throws -> AsyncThrowingStream<String, Error> {
         let messages = buildMessageHistory(
             context: context,
@@ -31,7 +32,8 @@ class AnthropicService {
             mode: mode,
             lens: lens,
             customEntityName: customEntityName,
-            sessionTimerDescription: sessionTimerDescription
+            sessionTimerDescription: sessionTimerDescription,
+            frustrationSignal: frustrationSignal
         )
 
         let parameters = MessageParameter(
@@ -67,7 +69,8 @@ class AnthropicService {
         mode: LearningMode,
         lens: LearningLens?,
         customEntityName: String? = nil,
-        sessionTimerDescription: String? = nil
+        sessionTimerDescription: String? = nil,
+        frustrationSignal: Bool = false
     ) async throws -> String {
         let messages = buildMessageHistory(
             context: context,
@@ -76,7 +79,8 @@ class AnthropicService {
             mode: mode,
             lens: lens,
             customEntityName: customEntityName,
-            sessionTimerDescription: sessionTimerDescription
+            sessionTimerDescription: sessionTimerDescription,
+            frustrationSignal: frustrationSignal
         )
 
         let parameters = MessageParameter(
@@ -107,7 +111,8 @@ class AnthropicService {
         mode: LearningMode,
         lens: LearningLens?,
         customEntityName: String? = nil,
-        sessionTimerDescription: String? = nil
+        sessionTimerDescription: String? = nil,
+        frustrationSignal: Bool = false
     ) -> [MessageParameter.Message] {
         var messages: [MessageParameter.Message] = []
 
@@ -117,7 +122,8 @@ class AnthropicService {
             mode: mode,
             lens: lens,
             customEntityName: customEntityName,
-            sessionTimerDescription: sessionTimerDescription
+            sessionTimerDescription: sessionTimerDescription,
+            frustrationSignal: frustrationSignal
         )
 
         // Add system prompt as first message (user/assistant pair)
@@ -155,7 +161,8 @@ class AnthropicService {
         mode: LearningMode,
         lens: LearningLens?,
         customEntityName: String? = nil,
-        sessionTimerDescription: String? = nil
+        sessionTimerDescription: String? = nil,
+        frustrationSignal: Bool = false
     ) -> String {
         // Use the PromptManager for consistent prompt generation
         return PromptManager.shared.getSystemPrompt(
@@ -163,7 +170,8 @@ class AnthropicService {
             mode: mode,
             lens: lens,
             customEntityName: customEntityName,
-            sessionTimerDescription: sessionTimerDescription
+            sessionTimerDescription: sessionTimerDescription,
+            frustrationSignal: frustrationSignal
         )
     }
 }

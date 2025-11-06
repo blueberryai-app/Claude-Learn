@@ -196,12 +196,15 @@ struct ChatView: View {
                         }
                     }
 
-                    Button(action: {}) {
+                    Button(action: {
+                        viewModel.handleFrustrationButton()
+                    }) {
                         Image(systemName: "exclamationmark.arrow.trianglehead.2.clockwise.rotate.90")
                             .font(.system(size: 20))
 
                     }
                     .tint(.red)
+                    .disabled(viewModel.isFrustrationButtonDisabled)
                 }
             }
         }
@@ -239,6 +242,21 @@ struct ChatView: View {
             }
         } message: {
             Text("Leaving will end your current timer session. You can always start a new one later.")
+        }
+        .overlay(alignment: .top) {
+            // Frustration button toast message
+            if let toastMessage = viewModel.frustrationToastMessage {
+                Text(toastMessage)
+                    .font(.subheadline)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 10)
+                    .background(Color.red.opacity(0.9))
+                    .cornerRadius(20)
+                    .padding(.top, 8)
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .animation(.spring(response: 0.3, dampingFraction: 0.7), value: viewModel.frustrationToastMessage)
+            }
         }
     }
 }

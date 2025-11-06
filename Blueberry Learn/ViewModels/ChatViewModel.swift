@@ -21,6 +21,10 @@ class ChatViewModel: ObservableObject {
     @Published var hasShownExpiredMessage = false
     @Published var showNavigationAlert = false
 
+    // Frustration button properties
+    @Published var frustrationButtonPressedAtMessageCount: Int?
+    @Published var frustrationToastMessage: String?
+
     let space: LearningSpace
     var session: ChatSession
     private let storageService = StorageService.shared
@@ -212,6 +216,130 @@ class ChatViewModel: ObservableObject {
     func endTimer() {
         sessionTimer.stop()
         hasShownExpiredMessage = false
+    }
+
+    // MARK: - Frustration Button Methods
+
+    var isFrustrationButtonDisabled: Bool {
+        guard let pressedAtCount = frustrationButtonPressedAtMessageCount else {
+            return false // Button is enabled if never pressed
+        }
+
+        let currentUserMessageCount = messages.filter { $0.role == .user }.count
+        return currentUserMessageCount < pressedAtCount + 3
+    }
+
+    func handleFrustrationButton() {
+        // Check cooldown based on message count
+        if isFrustrationButtonDisabled {
+            return
+        }
+
+        // Trigger haptic feedback
+        let generator = UIImpactFeedbackGenerator(style: .medium)
+        generator.impactOccurred()
+
+        // Show toast message
+        frustrationToastMessage = "Switching approach..."
+
+        // Auto-dismiss toast after 2 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            self.frustrationToastMessage = nil
+        }
+
+        // Set cooldown based on current user message count
+        let currentUserMessageCount = messages.filter { $0.role == .user }.count
+        frustrationButtonPressedAtMessageCount = currentUserMessageCount
+
+        // Send the frustration signal via a special message
+        sendFrustrationSignal()
+    }
+
+    private func sendFrustrationSignal() {
+        // Cancel any existing streaming task
+        streamingTask?.cancel()
+
+        errorMessage = nil
+        streamingMessageContent = ""
+        isLoading = true
+
+        // Create a placeholder for the assistant's response
+        let assistantMessage = ChatMessage(
+            content: "",
+            role: .assistant,
+            spaceId: space.id,
+            activeMode: currentMode,
+            activeLens: currentLens?.name
+        )
+        messages.append(assistantMessage)
+
+        // Add empty assistant message to session
+        session.messages.append(assistantMessage)
+
+        // Start streaming response with frustration signal
+        streamingTask = Task {
+            do {
+                // Send empty prompt but with frustration signal set
+                let stream = try await anthropicService.streamMessage(
+                    prompt: "Please continue helping me with this topic.",
+                    context: Array(messages.dropLast(1)), // Exclude the empty assistant message
+                    space: space,
+                    mode: currentMode,
+                    lens: currentLens,
+                    customEntityName: currentMode == .mimic ? customEntityName : nil,
+                    sessionTimerDescription: sessionTimer.getSessionDescription(),
+                    frustrationSignal: true
+                )
+
+                var fullResponse = ""
+                for try await chunk in stream {
+                    fullResponse += chunk
+                    await MainActor.run {
+                        self.streamingMessageContent = fullResponse
+                        // Update the last message with streaming content
+                        if let lastIndex = self.messages.indices.last {
+                            self.messages[lastIndex].content = fullResponse
+                        }
+                    }
+                }
+
+                // Save the complete message
+                await MainActor.run {
+                    if let lastIndex = self.messages.indices.last {
+                        self.messages[lastIndex].content = fullResponse
+
+                        // Update session with assistant's response
+                        self.session.messages[lastIndex].content = fullResponse
+                        self.session.lastMessageDate = Date()
+                        self.storageService.updateSession(self.session)
+                    }
+                    self.isLoading = false
+                    self.streamingMessageContent = ""
+                }
+            } catch {
+                await MainActor.run {
+                    // Create more user-friendly error messages
+                    var errorMessage = "Failed to get response"
+
+                    if (error as NSError).code == -1009 {
+                        errorMessage = "No internet connection. Please check your network."
+                    } else if error.localizedDescription.contains("401") || error.localizedDescription.contains("authentication") {
+                        errorMessage = "Invalid API key. Please check your API key in APIConfiguration.swift"
+                    } else if error.localizedDescription.contains("429") {
+                        errorMessage = "Rate limit exceeded. Please wait a moment and try again."
+                    } else {
+                        errorMessage += ": \(error.localizedDescription)"
+                    }
+
+                    self.errorMessage = errorMessage
+                    self.isLoading = false
+                    // Remove the empty assistant message on error
+                    if self.messages.last?.content.isEmpty == true {
+                        self.messages.removeLast()
+                    }
+                }
+            }
+        }
     }
 
     deinit {
