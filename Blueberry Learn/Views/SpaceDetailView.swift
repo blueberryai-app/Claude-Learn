@@ -66,6 +66,13 @@ struct SpaceDetailView: View {
                                     SessionCard(session: session) {
                                         navigateToSession = session
                                     }
+                                    .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+                                        Button(role: .destructive) {
+                                            viewModel.deleteSession(session)
+                                        } label: {
+                                            Label("Delete", systemImage: "trash")
+                                        }
+                                    }
                                     .contextMenu {
                                         Button(role: .destructive) {
                                             viewModel.deleteSession(session)
