@@ -2,7 +2,7 @@ import Foundation
 
 struct ChatMessage: Identifiable, Codable {
     let id: UUID
-    let content: String
+    var content: String  // Changed to var for streaming updates
     let role: MessageRole
     let timestamp: Date
     let spaceId: UUID

@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		297E91A92EBC53D900ECDDBF /* SwiftAnthropic in Frameworks */ = {isa = PBXBuildFile; productRef = 297E91A82EBC53D900ECDDBF /* SwiftAnthropic */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		29FB871F2EBBD7F200912190 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +56,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				297E91A92EBC53D900ECDDBF /* SwiftAnthropic in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +117,7 @@
 			);
 			name = "Blueberry Learn";
 			packageProductDependencies = (
+				297E91A82EBC53D900ECDDBF /* SwiftAnthropic */,
 			);
 			productName = "Blueberry Learn";
 			productReference = 29FB87112EBBD7F100912190 /* Blueberry Learn.app */;
@@ -196,6 +202,7 @@
 			mainGroup = 29FB87082EBBD7F100912190;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				297E91A72EBC53D900ECDDBF /* XCRemoteSwiftPackageReference "SwiftAnthropic" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 29FB87122EBBD7F100912190 /* Products */;
@@ -580,6 +587,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		297E91A72EBC53D900ECDDBF /* XCRemoteSwiftPackageReference "SwiftAnthropic" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/jamesrochabrun/SwiftAnthropic";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.4.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		297E91A82EBC53D900ECDDBF /* SwiftAnthropic */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 297E91A72EBC53D900ECDDBF /* XCRemoteSwiftPackageReference "SwiftAnthropic" */;
+			productName = SwiftAnthropic;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 29FB87092EBBD7F100912190 /* Project object */;
 }

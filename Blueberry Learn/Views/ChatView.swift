@@ -12,6 +12,27 @@ struct ChatView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // Error banner if present
+            if let errorMessage = viewModel.errorMessage {
+                HStack {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.orange)
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundColor(.primary)
+                    Spacer()
+                    Button("Dismiss") {
+                        viewModel.errorMessage = nil
+                    }
+                    .font(.caption)
+                }
+                .padding()
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(8)
+                .padding(.horizontal)
+                .transition(.move(edge: .top).combined(with: .opacity))
+            }
+
             // Messages list
             ScrollViewReader { proxy in
                 ScrollView {
@@ -20,16 +41,8 @@ struct ChatView: View {
                             EmptyStateView(icon: space.icon)
                         } else {
                             ForEach(viewModel.messages) { message in
-                                MessageBubble(message: message)
+                                MessageBubble(message: message, isStreaming: viewModel.isLoading && message.id == viewModel.messages.last?.id)
                                     .id(message.id)
-                            }
-
-                            if viewModel.isLoading {
-                                HStack {
-                                    ProgressView()
-                                        .padding()
-                                    Spacer()
-                                }
                             }
                         }
                     }
@@ -177,6 +190,7 @@ struct ChatView: View {
 
 struct MessageBubble: View {
     let message: ChatMessage
+    var isStreaming: Bool = false
 
     var body: some View {
         HStack {
@@ -199,15 +213,23 @@ struct MessageBubble: View {
                     .foregroundColor(.secondary)
                 }
 
-                Text(message.content)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(
-                        message.role == .user ?
-                        Color.blue : Color(.systemGray6)
-                    )
-                    .foregroundColor(message.role == .user ? .white : .primary)
-                    .cornerRadius(16)
+                HStack {
+                    Text(message.content)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 10)
+                        .background(
+                            message.role == .user ?
+                            Color.blue : Color(.systemGray6)
+                        )
+                        .foregroundColor(message.role == .user ? .white : .primary)
+                        .cornerRadius(16)
+
+                    if isStreaming && message.role == .assistant {
+                        ProgressView()
+                            .scaleEffect(0.6)
+                            .padding(.leading, 4)
+                    }
+                }
             }
 
             if message.role == .assistant {

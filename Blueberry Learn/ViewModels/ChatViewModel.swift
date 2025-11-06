@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import Combine
+import SwiftAnthropic
 
 class ChatViewModel: ObservableObject {
     @Published var messages: [ChatMessage] = []
@@ -11,9 +12,14 @@ class ChatViewModel: ObservableObject {
     @Published var isLoading = false
     @Published var customEntityName = ""
     @Published var showCustomEntityAlert = false
+    @Published var streamingMessageContent = ""
+    @Published var errorMessage: String?
 
     let space: LearningSpace
     private let storageService = StorageService.shared
+    private let anthropicService = AnthropicService()
+    private let promptManager = PromptManager.shared
+    private var streamingTask: Task<Void, Never>?
 
     init(space: LearningSpace) {
         self.space = space
@@ -26,6 +32,9 @@ class ChatViewModel: ObservableObject {
 
     func sendMessage() {
         guard !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+
+        // Cancel any existing streaming task
+        streamingTask?.cancel()
 
         // Add user message
         let userMessage = ChatMessage(
@@ -40,23 +49,85 @@ class ChatViewModel: ObservableObject {
 
         let currentInput = inputText
         inputText = ""
-
-        // Simulate AI response (for POC)
+        errorMessage = nil
+        streamingMessageContent = ""
         isLoading = true
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) { [weak self] in
-            guard let self = self else { return }
 
-            let responseText = self.generateMockResponse(to: currentInput)
-            let assistantMessage = ChatMessage(
-                content: responseText,
-                role: .assistant,
-                spaceId: self.space.id,
-                activeMode: self.currentMode,
-                activeLens: self.currentLens?.name
-            )
-            self.messages.append(assistantMessage)
-            self.storageService.addMessage(assistantMessage, to: self.space.id)
-            self.isLoading = false
+        // Create a placeholder for the assistant's response
+        let assistantMessage = ChatMessage(
+            content: "",
+            role: .assistant,
+            spaceId: space.id,
+            activeMode: currentMode,
+            activeLens: currentLens?.name
+        )
+        messages.append(assistantMessage)
+
+        // Start streaming response
+        streamingTask = Task {
+            do {
+                print("📤 Sending message to Claude API...")
+                print("   Space: \(space.name)")
+                print("   Mode: \(currentMode.rawValue)")
+                print("   Lens: \(currentLens?.name ?? "None")")
+                print("   User input: \(currentInput)")
+
+                let stream = try await anthropicService.streamMessage(
+                    prompt: currentInput,
+                    context: Array(messages.dropLast(2)), // Exclude the user message we just added and empty assistant message
+                    space: space,
+                    mode: currentMode,
+                    lens: currentLens,
+                    customEntityName: currentMode == .customEntity ? customEntityName : nil
+                )
+
+                var fullResponse = ""
+                for try await chunk in stream {
+                    fullResponse += chunk
+                    await MainActor.run {
+                        self.streamingMessageContent = fullResponse
+                        // Update the last message with streaming content
+                        if let lastIndex = self.messages.indices.last {
+                            self.messages[lastIndex].content = fullResponse
+                        }
+                    }
+                }
+
+                // Save the complete message
+                await MainActor.run {
+                    if let lastIndex = self.messages.indices.last {
+                        self.messages[lastIndex].content = fullResponse
+                        self.storageService.addMessage(self.messages[lastIndex], to: self.space.id)
+                    }
+                    self.isLoading = false
+                    self.streamingMessageContent = ""
+                }
+            } catch {
+                await MainActor.run {
+                    // Create more user-friendly error messages
+                    var errorMessage = "Failed to get response"
+
+                    if let apiError = error as? SwiftAnthropic.APIError {
+                        errorMessage += ": API Error"
+                        print("❌ API Error details: \(apiError)")
+                    } else if (error as NSError).code == -1009 {
+                        errorMessage = "No internet connection. Please check your network."
+                    } else if error.localizedDescription.contains("401") || error.localizedDescription.contains("authentication") {
+                        errorMessage = "Invalid API key. Please check your API key in APIConfiguration.swift"
+                    } else if error.localizedDescription.contains("429") {
+                        errorMessage = "Rate limit exceeded. Please wait a moment and try again."
+                    } else {
+                        errorMessage += ": \(error.localizedDescription)"
+                    }
+
+                    self.errorMessage = errorMessage
+                    self.isLoading = false
+                    // Remove the empty assistant message on error
+                    if self.messages.last?.content.isEmpty == true {
+                        self.messages.removeLast()
+                    }
+                }
+            }
         }
     }
 
@@ -71,20 +142,13 @@ class ChatViewModel: ObservableObject {
         currentLens = lens
     }
 
-    private func generateMockResponse(to input: String) -> String {
-        // Mock responses based on mode
-        switch currentMode {
-        case .standard:
-            return "That's an interesting question about \(space.name). Let me help you understand this concept better..."
-        case .writing:
-            return "Let's work on improving your writing. Consider starting with a clear thesis statement and supporting it with evidence..."
-        case .debate:
-            return "I see your point, but let me present an alternative perspective on this topic..."
-        case .customEntity:
-            let entity = customEntityName.isEmpty ? "Einstein" : customEntityName
-            return "[\(entity)] Ah, what a fascinating question! In my experience..."
-        case .quiz:
-            return "Great! Let's test your knowledge with a question: What is the primary function of...?"
-        }
+    func cancelStreaming() {
+        streamingTask?.cancel()
+        streamingTask = nil
+        isLoading = false
+    }
+
+    deinit {
+        streamingTask?.cancel()
     }
 }
