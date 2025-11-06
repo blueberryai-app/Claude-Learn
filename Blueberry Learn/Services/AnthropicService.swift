@@ -8,11 +8,6 @@ class AnthropicService {
     // Use configuration file for API key
     init(apiKey: String? = nil) {
         self.apiKey = apiKey ?? APIConfiguration.anthropicAPIKey
-
-        // Debug: Check API key
-        print("🔑 API Key configured: \(self.apiKey.prefix(10))...") // Only show first 10 chars for security
-        print("   Key length: \(self.apiKey.count)")
-
         self.service = AnthropicServiceFactory.service(
             apiKey: self.apiKey,
             betaHeaders: nil
@@ -44,41 +39,21 @@ class AnthropicService {
             stream: true
         )
 
-        // Debug: Print the parameters being sent
-        print("🔍 DEBUG - Streaming Message Parameters:")
-        print("  Model: \(parameters.model)")
-        print("  Messages count: \(parameters.messages.count)")
-        print("  Max tokens: \(parameters.maxTokens)")
-        print("  First few messages:")
-        for (index, message) in parameters.messages.prefix(3).enumerated() {
-            print("    Message \(index): Role=\(message.role)")
-        }
+        let stream = try await service.streamMessage(parameters)
 
-        do {
-            let stream = try await service.streamMessage(parameters)
-
-            return AsyncThrowingStream { continuation in
-                Task {
-                    do {
-                        for try await event in stream {
-                            if let text = event.delta?.text {
-                                continuation.yield(text)
-                            }
+        return AsyncThrowingStream { continuation in
+            Task {
+                do {
+                    for try await event in stream {
+                        if let text = event.delta?.text {
+                            continuation.yield(text)
                         }
-                        continuation.finish()
-                    } catch {
-                        print("❌ Stream error: \(error)")
-                        continuation.finish(throwing: error)
-                        }
+                    }
+                    continuation.finish()
+                } catch {
+                    continuation.finish(throwing: error)
                 }
             }
-        } catch {
-            print("❌ Failed to create stream: \(error)")
-            print("   Error type: \(type(of: error))")
-            if let apiError = error as? SwiftAnthropic.APIError {
-                print("   API Error details: \(apiError)")
-            }
-            throw error
         }
     }
 
@@ -138,9 +113,6 @@ class AnthropicService {
             lens: lens,
             customEntityName: customEntityName
         )
-
-        print("📝 System prompt preview (first 200 chars):")
-        print("   \(String(systemPrompt.prefix(200)))...")
 
         // Add system prompt as first message (user/assistant pair)
         messages.append(MessageParameter.Message(

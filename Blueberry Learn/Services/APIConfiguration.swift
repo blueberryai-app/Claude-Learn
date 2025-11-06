@@ -1,9 +1,9 @@
 import Foundation
 
-// IMPORTANT: This is for POC only. In production, use a secure method like Keychain or environment variables.
+// IMPORTANT: This is for POC only. In production, use a secure method like Keychain or environment variables, or something like AIProxy.
 struct APIConfiguration {
-    // Replace this with your actual Anthropic API key
-    // Get your API key from: https://console.anthropic.com/account/keys
+    // For prototyping, this holds my personal key (not commited to github, but encrypted in the testflight distributed app)
+    // Key from: https://console.anthropic.com/account/keys
     static let anthropicAPIKey = ""
 
     // Optional: Set to true to use mock responses instead of real API calls (for testing UI)
@@ -13,7 +13,7 @@ struct APIConfiguration {
     static let claudeModel = "claude-sonnet-4-5"
 
     // Optional: Set max tokens for responses
-    static let maxTokens = 1024
+    static let maxTokens = 8056
 }
 
 /*

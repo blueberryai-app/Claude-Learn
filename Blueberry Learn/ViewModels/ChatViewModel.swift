@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 import Combine
-import SwiftAnthropic
 
 class ChatViewModel: ObservableObject {
     @Published var messages: [ChatMessage] = []
@@ -66,12 +65,6 @@ class ChatViewModel: ObservableObject {
         // Start streaming response
         streamingTask = Task {
             do {
-                print("📤 Sending message to Claude API...")
-                print("   Space: \(space.name)")
-                print("   Mode: \(currentMode.rawValue)")
-                print("   Lens: \(currentLens?.name ?? "None")")
-                print("   User input: \(currentInput)")
-
                 let stream = try await anthropicService.streamMessage(
                     prompt: currentInput,
                     context: Array(messages.dropLast(2)), // Exclude the user message we just added and empty assistant message
@@ -107,10 +100,7 @@ class ChatViewModel: ObservableObject {
                     // Create more user-friendly error messages
                     var errorMessage = "Failed to get response"
 
-                    if let apiError = error as? SwiftAnthropic.APIError {
-                        errorMessage += ": API Error"
-                        print("❌ API Error details: \(apiError)")
-                    } else if (error as NSError).code == -1009 {
+                    if (error as NSError).code == -1009 {
                         errorMessage = "No internet connection. Please check your network."
                     } else if error.localizedDescription.contains("401") || error.localizedDescription.contains("authentication") {
                         errorMessage = "Invalid API key. Please check your API key in APIConfiguration.swift"
