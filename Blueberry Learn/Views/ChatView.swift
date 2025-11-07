@@ -122,7 +122,7 @@ struct ChatView: View {
                     }
 
                     // Mode selector buttons
-                    HStack(spacing: 16) {
+                    HStack(spacing: 10) {
                         // Plus button to open full mode selection
                         Button(action: {
                             viewModel.isShowingModeSelection.toggle()
@@ -133,37 +133,6 @@ struct ChatView: View {
                                 .frame(width: 32, height: 32)
                         }
                         .disabled(viewModel.isQuizLocked)
-
-                        // Writing Mode
-                        Button(action: {
-                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                viewModel.switchMode(.writing)
-                            }
-                        }) {
-                            HStack(spacing: 6) {
-                                Image("writing_mode")
-                                    .renderingMode(.template)
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fit)
-                                    .frame(width: 24, height: 24)
-                                    .foregroundColor(viewModel.currentMode == .writing ? .blue : (viewModel.isQuizLocked ? .gray : .primary))
-
-                                if viewModel.currentMode == .writing {
-                                    Text("Writing Mode")
-                                        .font(.system(size: 14, weight: .medium))
-                                        .foregroundColor(.blue)
-                                        .transition(.opacity.combined(with: .scale(scale: 0.8, anchor: .leading)))
-                                }
-                            }
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 6)
-                            .background(
-                                Capsule()
-                                    .fill(viewModel.currentMode == .writing ? Color.blue.opacity(0.1) : Color.clear)
-                            )
-                        }
-                        .disabled(viewModel.isQuizLocked)
-                        .opacity(viewModel.isQuizLocked ? 0.5 : 1.0)
 
                         // Debate Me
                         Button(action: {
@@ -203,7 +172,7 @@ struct ChatView: View {
                             }
                         }) {
                             HStack(spacing: 6) {
-                                Image("custom_entity")
+                                Image("mimic")
                                     .renderingMode(.template)
                                     .resizable()
                                     .aspectRatio(contentMode: .fit)

@@ -88,7 +88,6 @@ class PromptManager {
         The student can activate special learning modes that enhance your teaching approach. When a mode is activated, you'll receive specific instructions for that mode. Available modes include:
 
         - **Standard Mode**: Regular educational assistance (default)
-        - **Writing Mode**: Specialized support for writing and composition
         - **Debate Mode**: Engage in educational debates to develop argumentation skills
         - **Quiz Mode**: Generate practice questions and quizzes
         - **Mimic Mode**: Adapt your communication style to match student preferences
@@ -148,16 +147,6 @@ class PromptManager {
             return """
             Engage in regular tutoring mode. Answer questions clearly and thoroughly.
             Provide explanations, examples, and help students understand concepts deeply.
-            """
-
-        case .writing:
-            return """
-            WRITING MODE ACTIVE:
-            - Guide the writing process without writing for the student
-            - Ask probing questions to develop their ideas
-            - Provide feedback on structure, clarity, and style
-            - Suggest improvements but let them do the actual writing
-            - Focus on teaching writing skills, not producing content
             """
 
         case .debate:

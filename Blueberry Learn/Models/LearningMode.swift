@@ -2,7 +2,6 @@ import Foundation
 
 enum LearningMode: String, CaseIterable, Codable, Hashable {
     case standard = "Standard"
-    case writing = "Writing Mode"
     case debate = "Debate Me"
     case mimic = "Mimic"
     case quiz = "Quiz Me"
@@ -11,8 +10,6 @@ enum LearningMode: String, CaseIterable, Codable, Hashable {
         switch self {
         case .standard:
             return "text.bubble"
-        case .writing:
-            return "writing_mode"
         case .debate:
             return "debate_mode"
         case .mimic:
@@ -26,8 +23,6 @@ enum LearningMode: String, CaseIterable, Codable, Hashable {
         switch self {
         case .standard:
             return "Regular tutoring and Q&A"
-        case .writing:
-            return "Get help with writing and composition"
         case .debate:
             return "Engage in constructive debate"
         case .mimic:

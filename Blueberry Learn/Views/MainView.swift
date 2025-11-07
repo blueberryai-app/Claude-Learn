@@ -132,7 +132,7 @@ struct MainView: View {
                 .padding(.trailing, 20)
                 .padding(.bottom, 20)
             }
-            .navigationTitle("Blueberry Learn")
+            .navigationTitle("Claude Learn")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 viewModel.loadSessions()
