@@ -3,14 +3,12 @@ import Foundation
 struct ChatSession: Identifiable, Codable, Hashable {
     let id: UUID
     var title: String
-    let spaceId: UUID
     let createdDate: Date
     var lastMessageDate: Date
     var messages: [ChatMessage]
 
-    init(spaceId: UUID, messages: [ChatMessage] = []) {
+    init(messages: [ChatMessage] = []) {
         self.id = UUID()
-        self.spaceId = spaceId
         self.createdDate = Date()
         self.lastMessageDate = Date()
         self.messages = messages
@@ -79,13 +77,13 @@ struct ChatSession: Identifiable, Codable, Hashable {
 
 // MARK: - Mock Data
 extension ChatSession {
-    static func mockSession(for space: LearningSpace) -> ChatSession {
+    static func mockSession() -> ChatSession {
         let messages = [
-            ChatMessage(content: "What is Newton's first law?", role: .user, spaceId: space.id),
-            ChatMessage(content: "Newton's first law, also known as the law of inertia, states that an object at rest stays at rest and an object in motion stays in motion at the same speed and in the same direction unless acted upon by an unbalanced force.", role: .assistant, spaceId: space.id)
+            ChatMessage(content: "What is Newton's first law?", role: .user),
+            ChatMessage(content: "Newton's first law, also known as the law of inertia, states that an object at rest stays at rest and an object in motion stays in motion at the same speed and in the same direction unless acted upon by an unbalanced force.", role: .assistant)
         ]
 
-        var session = ChatSession(spaceId: space.id, messages: messages)
+        var session = ChatSession(messages: messages)
         session.updateTitle()
         return session
     }

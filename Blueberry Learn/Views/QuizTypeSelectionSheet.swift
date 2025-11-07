@@ -110,5 +110,5 @@ struct QuizTypeOptionButton: View {
 }
 
 #Preview {
-    QuizTypeSelectionSheet(viewModel: ChatViewModel(space: LearningSpace.mockSpaces.first!))
+    QuizTypeSelectionSheet(viewModel: ChatViewModel())
 }

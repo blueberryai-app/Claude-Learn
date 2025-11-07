@@ -11,7 +11,7 @@ import SwiftUI
 struct Blueberry_LearnApp: App {
     var body: some Scene {
         WindowGroup {
-            SpacesGridView()
+            MainView()
                 .preferredColorScheme(.light) // For POC, use light mode
                 .fontDesign(.serif)
         }

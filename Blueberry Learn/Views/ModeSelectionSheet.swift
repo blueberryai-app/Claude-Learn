@@ -150,5 +150,5 @@ struct ModeToggleRow: View {
 }
 
 #Preview {
-    ModeSelectionSheet(viewModel: ChatViewModel(space: LearningSpace.mockSpaces.first!))
+    ModeSelectionSheet(viewModel: ChatViewModel())
 }

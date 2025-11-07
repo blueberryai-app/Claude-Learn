@@ -148,7 +148,7 @@ struct MultipleChoiceButton: View {
 }
 
 #Preview {
-    let viewModel = ChatViewModel(space: LearningSpace.mockSpaces.first!)
+    let viewModel = ChatViewModel()
     let question = QuizQuestion(
         number: 1,
         total: 4,

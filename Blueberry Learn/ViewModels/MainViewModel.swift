@@ -2,24 +2,22 @@ import Foundation
 import SwiftUI
 import Combine
 
-class SpaceDetailViewModel: ObservableObject {
+class MainViewModel: ObservableObject {
     @Published var sessions: [ChatSession] = []
     @Published var isLoading = false
 
-    let space: LearningSpace
     private let storageService = StorageService.shared
 
-    init(space: LearningSpace) {
-        self.space = space
+    init() {
         loadSessions()
     }
 
     func loadSessions() {
-        sessions = storageService.loadSessions(for: space.id)
+        sessions = storageService.loadSessions()
     }
 
     func deleteSession(_ session: ChatSession) {
-        storageService.deleteSession(session.id, from: space.id)
+        storageService.deleteSession(session.id)
         loadSessions() // Reload to reflect deletion
     }
 }

@@ -37,7 +37,6 @@ class ChatViewModel: ObservableObject {
         return quizSession != nil && !(quizSession?.isComplete ?? false)
     }
 
-    let space: LearningSpace
     var session: ChatSession
     private var isNewSession = false // Track if this is a new unsaved session
     private let storageService = StorageService.shared
@@ -46,17 +45,15 @@ class ChatViewModel: ObservableObject {
     private var streamingTask: Task<Void, Never>?
     private var timerObserver: AnyCancellable?
 
-    init(space: LearningSpace, sessionId: UUID? = nil) {
-        self.space = space
-
+    init(sessionId: UUID? = nil) {
         // Load existing session or create new one (in memory only)
         if let sessionId = sessionId,
-           let existingSession = storageService.getSession(sessionId, from: space.id) {
+           let existingSession = storageService.getSession(sessionId) {
             self.session = existingSession
             self.isNewSession = false
         } else {
             // Create a new session in memory but don't save it yet
-            self.session = ChatSession(spaceId: space.id)
+            self.session = ChatSession()
             self.isNewSession = true
         }
 
@@ -94,7 +91,6 @@ class ChatViewModel: ObservableObject {
                 let hiddenLensMessage = ChatMessage(
                     content: lensInstructions,
                     role: .user,
-                    spaceId: space.id,
                     activeMode: currentMode,
                     activeLens: currentLens?.name,
                     isHidden: true
@@ -108,7 +104,6 @@ class ChatViewModel: ObservableObject {
         let userMessage = ChatMessage(
             content: inputText,
             role: .user,
-            spaceId: space.id,
             activeMode: currentMode,
             activeLens: currentLens?.name
         )
@@ -122,9 +117,9 @@ class ChatViewModel: ObservableObject {
         // If this is a new unsaved session, save it now
         if isNewSession {
             // Add the session to storage for the first time
-            var sessions = storageService.loadSessions(for: space.id)
+            var sessions = storageService.loadSessions()
             sessions.append(session)
-            storageService.saveSessions(sessions, for: space.id)
+            storageService.saveSessions(sessions)
             isNewSession = false
         } else {
             // Update existing session
@@ -141,7 +136,6 @@ class ChatViewModel: ObservableObject {
         let assistantMessage = ChatMessage(
             content: "",
             role: .assistant,
-            spaceId: space.id,
             activeMode: currentMode,
             activeLens: currentLens?.name
         )
@@ -161,7 +155,6 @@ class ChatViewModel: ObservableObject {
                 let stream = try await anthropicService.streamMessage(
                     prompt: currentInput,
                     context: Array(messages.dropLast(2)), // Exclude the user message we just added and empty assistant message
-                    space: space,
                     mode: currentMode,
                     customEntityName: currentMode == .mimic ? customEntityName : nil,
                     sessionTimerDescription: sessionTimer.getSessionDescription()
@@ -286,7 +279,6 @@ class ChatViewModel: ObservableObject {
                 let hiddenMessage = ChatMessage(
                     content: lensInstructions,
                     role: .user,
-                    spaceId: space.id,
                     activeMode: currentMode,
                     activeLens: lens?.name,
                     isHidden: true
@@ -338,7 +330,6 @@ class ChatViewModel: ObservableObject {
         let acknowledgmentMessage = ChatMessage(
             content: acknowledgmentText,
             role: .assistant,
-            spaceId: space.id,
             activeMode: currentMode,
             activeLens: currentLens?.name
         )
@@ -349,9 +340,9 @@ class ChatViewModel: ObservableObject {
 
         // If this is a new unsaved session, save it now
         if isNewSession {
-            var sessions = storageService.loadSessions(for: space.id)
+            var sessions = storageService.loadSessions()
             sessions.append(session)
-            storageService.saveSessions(sessions, for: space.id)
+            storageService.saveSessions(sessions)
             isNewSession = false
         } else {
             storageService.updateSession(session)
@@ -422,7 +413,6 @@ class ChatViewModel: ObservableObject {
         let hiddenUserMessage = ChatMessage(
             content: frustrationInstructions,
             role: .user,
-            spaceId: space.id,
             activeMode: currentMode,
             activeLens: currentLens?.name,
             isHidden: true
@@ -434,7 +424,6 @@ class ChatViewModel: ObservableObject {
         let assistantMessage = ChatMessage(
             content: "",
             role: .assistant,
-            spaceId: space.id,
             activeMode: currentMode,
             activeLens: currentLens?.name
         )
@@ -448,9 +437,9 @@ class ChatViewModel: ObservableObject {
 
         // If this is a new unsaved session, save it now
         if isNewSession {
-            var sessions = storageService.loadSessions(for: space.id)
+            var sessions = storageService.loadSessions()
             sessions.append(session)
-            storageService.saveSessions(sessions, for: space.id)
+            storageService.saveSessions(sessions)
             isNewSession = false
         } else {
             storageService.updateSession(session)
@@ -465,7 +454,6 @@ class ChatViewModel: ObservableObject {
                 let stream = try await anthropicService.streamMessage(
                     prompt: "Please respond to my situation.",
                     context: Array(messages.dropLast(1)), // Exclude the empty assistant message
-                    space: space,
                     mode: currentMode,
                     customEntityName: currentMode == .mimic ? customEntityName : nil,
                     sessionTimerDescription: sessionTimer.getSessionDescription()

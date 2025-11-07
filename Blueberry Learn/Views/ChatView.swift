@@ -2,16 +2,14 @@ import SwiftUI
 import MarkdownUI
 
 struct ChatView: View {
-    let space: LearningSpace
     let sessionId: UUID?
     @StateObject private var viewModel: ChatViewModel
     @FocusState private var isInputFocused: Bool
     @Environment(\.dismiss) private var dismiss
 
-    init(space: LearningSpace, sessionId: UUID? = nil) {
-        self.space = space
+    init(sessionId: UUID? = nil) {
         self.sessionId = sessionId
-        self._viewModel = StateObject(wrappedValue: ChatViewModel(space: space, sessionId: sessionId))
+        self._viewModel = StateObject(wrappedValue: ChatViewModel(sessionId: sessionId))
     }
 
     var body: some View {
@@ -42,7 +40,7 @@ struct ChatView: View {
                 ScrollView {
                     VStack(spacing: 12) {
                         if viewModel.messages.isEmpty {
-                            EmptyStateView(icon: space.icon)
+                            EmptyStateView(icon: "book")
                         } else {
                             ForEach(viewModel.messages.filter { !$0.isHidden }) { message in
                                 VStack(spacing: 12) {
@@ -94,7 +92,7 @@ struct ChatView: View {
                     if !(viewModel.quizSession?.currentQuestion?.questionType == .multipleChoice &&
                          viewModel.quizSession?.isAwaitingAnswer == true) {
                         HStack(spacing: 8) {
-                            TextField("I want to learn more about \(space.name.lowercased())", text: $viewModel.inputText)
+                            TextField("Ask a question or describe what you want to learn", text: $viewModel.inputText)
                                 .textFieldStyle(PlainTextFieldStyle())
                                 .focused($isInputFocused)
                                 .padding(.horizontal, 12)
@@ -261,7 +259,7 @@ struct ChatView: View {
                 .padding(.bottom, 12)
             }
         }
-        .navigationTitle(space.name)
+        .navigationTitle("Chat")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(viewModel.sessionTimer.isActive)
         .toolbar {
@@ -445,6 +443,6 @@ struct EmptyStateView: View {
 
 #Preview {
     NavigationStack {
-        ChatView(space: LearningSpace.mockSpaces.first!)
+        ChatView()
     }
 }

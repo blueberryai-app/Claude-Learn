@@ -23,7 +23,6 @@ class AnthropicService {
     func streamMessage(
         prompt: String,
         context: [ChatMessage],
-        space: LearningSpace,
         mode: LearningMode,
         customEntityName: String? = nil,
         sessionTimerDescription: String? = nil
@@ -31,7 +30,6 @@ class AnthropicService {
         let messages = buildMessageHistory(
             context: context,
             currentPrompt: prompt,
-            space: space,
             mode: mode,
             customEntityName: customEntityName,
             sessionTimerDescription: sessionTimerDescription
@@ -48,32 +46,28 @@ class AnthropicService {
             model: .other(APIConfiguration.claudeModel),
             messages: messages,
             maxTokens: APIConfiguration.maxTokens,
-            stream: true
+            system: nil
         )
-
-        print("🔵 [AnthropicService] Calling service.streamMessage...")
-        let stream = try await service.streamMessage(parameters)
-        print("🟢 [AnthropicService] Stream created successfully")
 
         return AsyncThrowingStream { continuation in
             Task {
                 do {
-                    for try await event in stream {
-                        if let text = event.delta?.text {
-                            continuation.yield(text)
+                    print("🔵 [AnthropicService] Calling createMessage with streaming")
+                    let stream = try await service.streamMessage(parameters)
+
+                    print("🔵 [AnthropicService] Stream received, iterating over chunks")
+                    for try await message in stream {
+                        if let content = message.delta?.text {
+                            continuation.yield(content)
                         }
                     }
-                    print("🟢 [AnthropicService] Stream finished successfully")
+                    print("🟢 [AnthropicService] Stream completed successfully")
                     continuation.finish()
                 } catch {
                     print("🔴 [AnthropicService] Stream error: \(error)")
                     print("🔴 [AnthropicService] Error type: \(type(of: error))")
-                    print("🔴 [AnthropicService] Error localized: \(error.localizedDescription)")
-                    if let nsError = error as NSError? {
-                        print("🔴 [AnthropicService] NSError domain: \(nsError.domain)")
-                        print("🔴 [AnthropicService] NSError code: \(nsError.code)")
-                        print("🔴 [AnthropicService] NSError userInfo: \(nsError.userInfo)")
-                    }
+                    print("🔴 [AnthropicService] Error description: \(error.localizedDescription)")
+
                     continuation.finish(throwing: error)
                 }
             }
@@ -84,7 +78,6 @@ class AnthropicService {
     func sendMessage(
         prompt: String,
         context: [ChatMessage],
-        space: LearningSpace,
         mode: LearningMode,
         customEntityName: String? = nil,
         sessionTimerDescription: String? = nil
@@ -92,7 +85,6 @@ class AnthropicService {
         let messages = buildMessageHistory(
             context: context,
             currentPrompt: prompt,
-            space: space,
             mode: mode,
             customEntityName: customEntityName,
             sessionTimerDescription: sessionTimerDescription
@@ -122,7 +114,6 @@ class AnthropicService {
     private func buildMessageHistory(
         context: [ChatMessage],
         currentPrompt: String,
-        space: LearningSpace,
         mode: LearningMode,
         customEntityName: String? = nil,
         sessionTimerDescription: String? = nil
@@ -131,7 +122,6 @@ class AnthropicService {
 
         // Get system prompt with timing info
         let systemPrompt = buildSystemPrompt(
-            space: space,
             mode: mode,
             customEntityName: customEntityName,
             sessionTimerDescription: sessionTimerDescription
@@ -167,7 +157,7 @@ class AnthropicService {
             ))
         }
 
-        // Add current user prompt
+        // Add current prompt
         messages.append(MessageParameter.Message(
             role: .user,
             content: .text(currentPrompt)
@@ -193,43 +183,41 @@ class AnthropicService {
             return text.isEmpty ? "[Quiz Question]" : text
 
         case .feedback:
-            var text = ""
-            if let isCorrect = quizData.isCorrect {
-                text += isCorrect ? "Correct! " : "Not quite right. "
-            }
+            var text = "[Quiz Feedback]"
             if let explanation = quizData.explanation {
-                text += explanation
+                text = explanation
             }
             if let encouragement = quizData.encouragement {
                 text += "\n\n\(encouragement)"
             }
-            return text.isEmpty ? "[Quiz Feedback]" : text
+            return text
 
         case .quizComplete:
-            var text = "Quiz Complete!\n"
-            if let score = quizData.score {
-                text += "Score: \(score)"
-            }
+            var text = "[Quiz Complete]"
             if let summary = quizData.summary {
-                text += "\n\n\(summary)"
+                text = summary
+            }
+            if let closingMessage = quizData.closingMessage {
+                text += "\n\n\(closingMessage)"
             }
             return text
 
         case .quizStart:
+            if let topic = quizData.topic {
+                return "Starting quiz on: \(topic)"
+            }
             return "[Quiz Started]"
         }
     }
 
-    // Build system prompt based on current settings
+    // Build system prompt
     private func buildSystemPrompt(
-        space: LearningSpace,
         mode: LearningMode,
         customEntityName: String? = nil,
         sessionTimerDescription: String? = nil
     ) -> String {
         // Use the PromptManager for consistent prompt generation
         return PromptManager.shared.getSystemPrompt(
-            for: space,
             mode: mode,
             customEntityName: customEntityName,
             sessionTimerDescription: sessionTimerDescription
