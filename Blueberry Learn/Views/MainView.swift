@@ -4,6 +4,8 @@ struct MainView: View {
     @StateObject private var viewModel = MainViewModel()
     @State private var navigateToNewChat = false
     @State private var navigateToSession: ChatSession? = nil
+    @State private var showFilesInfo = false
+    @State private var showInstructionsInfo = false
 
     var body: some View {
         NavigationStack {
@@ -12,32 +14,44 @@ struct MainView: View {
                     // Files and Instructions sections - ALWAYS visible at top
                     HStack(spacing: 16) {
                         // Files section
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Files")
-                                .font(.system(size: 17, weight: .semibold))
-                            Text("Add PDFs, docs, or other text to use in this project.")
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
+                        Button(action: {
+                            showFilesInfo = true
+                        }) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Files")
+                                    .font(.system(size: 17, weight: .semibold))
+                                    .foregroundColor(.primary)
+                                Text("Add PDFs, docs, or other text to use in this project.")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(16)
+                            .background(Color.cardBackground)
+                            .cornerRadius(12)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(16)
-                        .background(Color.cardBackground)
-                        .cornerRadius(12)
+                        .buttonStyle(PlainButtonStyle())
 
                         // Instructions section
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Instructions")
-                                .font(.system(size: 17, weight: .semibold))
-                            Text("Add instructions to tailor Claude's responses.")
-                                .font(.system(size: 14))
-                                .foregroundColor(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
+                        Button(action: {
+                            showInstructionsInfo = true
+                        }) {
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Instructions")
+                                    .font(.system(size: 17, weight: .semibold))
+                                    .foregroundColor(.primary)
+                                Text("Add instructions to tailor Claude's responses.")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.secondary)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(16)
+                            .background(Color.cardBackground)
+                            .cornerRadius(12)
                         }
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(16)
-                        .background(Color.cardBackground)
-                        .cornerRadius(12)
+                        .buttonStyle(PlainButtonStyle())
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 16)
@@ -118,7 +132,7 @@ struct MainView: View {
                 .padding(.trailing, 20)
                 .padding(.bottom, 20)
             }
-            .navigationTitle("Claude Learn")
+            .navigationTitle("Blueberry Learn")
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {
                 viewModel.loadSessions()
@@ -128,6 +142,12 @@ struct MainView: View {
             }
             .navigationDestination(item: $navigateToSession) { session in
                 ChatView(sessionId: session.id)
+            }
+            .sheet(isPresented: $showFilesInfo) {
+                FilesInfoSheet()
+            }
+            .sheet(isPresented: $showInstructionsInfo) {
+                InstructionsInfoSheet()
             }
         }
     }
@@ -165,6 +185,168 @@ struct SessionCard: View {
             .cornerRadius(12)
         }
         .buttonStyle(PlainButtonStyle())
+    }
+}
+
+// Files Info Sheet
+struct FilesInfoSheet: View {
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 20) {
+                // Header
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Files")
+                        .font(.system(size: 24, weight: .bold))
+
+                    Text("This is a prototype feature")
+                        .font(.system(size: 15))
+                        .foregroundColor(.secondary)
+                }
+
+                // Production feature description
+                Text("In the production app, you could upload and manage files to give Claude context:")
+                    .font(.system(size: 15))
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                // Examples
+                VStack(alignment: .leading, spacing: 12) {
+                    FeatureExample(
+                        icon: "doc.text",
+                        title: "Class materials",
+                        description: "Upload lecture slides, study guides, or textbook PDFs"
+                    )
+
+                    FeatureExample(
+                        icon: "calendar",
+                        title: "Reference by date",
+                        description: "\"What did we cover on October 15th?\""
+                    )
+
+                    FeatureExample(
+                        icon: "folder",
+                        title: "Organize by subject",
+                        description: "Group files by course or topic"
+                    )
+                }
+
+                Spacer()
+            }
+            .padding(24)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 22))
+                            .foregroundColor(.secondary)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+    }
+}
+
+// Instructions Info Sheet
+struct InstructionsInfoSheet: View {
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        NavigationStack {
+            VStack(alignment: .leading, spacing: 20) {
+                // Header
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Instructions")
+                        .font(.system(size: 24, weight: .bold))
+
+                    Text("This is a prototype feature")
+                        .font(.system(size: 15))
+                        .foregroundColor(.secondary)
+                }
+
+                // Production feature description
+                Text("In the production app, you could create custom instructions to personalize how Claude helps you:")
+                    .font(.system(size: 15))
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                // Examples
+                VStack(alignment: .leading, spacing: 12) {
+                    FeatureExample(
+                        icon: "person.text.rectangle",
+                        title: "Learning style",
+                        description: "\"I learn best with visual examples\""
+                    )
+
+                    FeatureExample(
+                        icon: "graduationcap",
+                        title: "Academic level",
+                        description: "\"I'm a high school senior taking AP Calculus\""
+                    )
+
+                    FeatureExample(
+                        icon: "target",
+                        title: "Study goals",
+                        description: "\"Help me prepare for the SAT Math section\""
+                    )
+                }
+
+                Spacer()
+            }
+            .padding(24)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        dismiss()
+                    }) {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.system(size: 22))
+                            .foregroundColor(.secondary)
+                            .symbolRenderingMode(.hierarchical)
+                    }
+                }
+            }
+        }
+        .presentationDetents([.medium])
+        .presentationDragIndicator(.visible)
+    }
+}
+
+// Helper component for feature examples
+struct FeatureExample: View {
+    let icon: String
+    let title: String
+    let description: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 18))
+                .foregroundColor(.claudeOrange)
+                .frame(width: 28)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.system(size: 15, weight: .semibold))
+
+                Text(description)
+                    .font(.system(size: 14))
+                    .foregroundColor(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color(.systemGray6))
+        .cornerRadius(10)
     }
 }
 

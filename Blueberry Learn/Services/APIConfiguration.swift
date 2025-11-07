@@ -12,6 +12,9 @@ struct APIConfiguration {
     // Optional: Set the Claude model to use
     static let claudeModel = "claude-sonnet-4-5"
 
+    // Optional: Set model used for summaries, such as title generator
+    static let summaryModel = "claude-haiku-4-5"
+
     // Optional: Set max tokens for responses
     static let maxTokens = 8056
 }

@@ -259,7 +259,7 @@ struct ChatView: View {
                 .padding(.bottom, 12)
             }
         }
-        .navigationTitle("Chat")
+        .navigationTitle(viewModel.session.title)
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(viewModel.sessionTimer.isActive)
         .toolbar {

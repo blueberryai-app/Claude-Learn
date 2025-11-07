@@ -37,7 +37,7 @@ class ChatViewModel: ObservableObject {
         return quizSession != nil && !(quizSession?.isComplete ?? false)
     }
 
-    var session: ChatSession
+    @Published var session: ChatSession
     private var isNewSession = false // Track if this is a new unsaved session
     private let storageService = StorageService.shared
     private let anthropicService = AnthropicService()
@@ -121,6 +121,23 @@ class ChatViewModel: ObservableObject {
             sessions.append(session)
             storageService.saveSessions(sessions)
             isNewSession = false
+
+            // Asynchronously generate AI title for the first message
+            let firstMessageContent = userMessage.content
+            Task {
+                do {
+                    let generatedTitle = try await anthropicService.generateChatTitle(from: firstMessageContent)
+                    await MainActor.run {
+                        // Update session title and save
+                        self.session.title = generatedTitle
+                        self.storageService.updateSession(self.session)
+                        print("🟢 [ChatViewModel] Updated session title to: \(generatedTitle)")
+                    }
+                } catch {
+                    // Silently fail - keep the truncated title as fallback
+                    print("🟡 [ChatViewModel] Failed to generate AI title, keeping truncated version: \(error)")
+                }
+            }
         } else {
             // Update existing session
             storageService.updateSession(session)

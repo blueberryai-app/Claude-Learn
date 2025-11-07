@@ -110,6 +110,49 @@ class AnthropicService {
         return ""
     }
 
+    // Generate a concise 2-3 word title from the first user message
+    func generateChatTitle(from firstMessage: String) async throws -> String {
+        print("🔵 [AnthropicService] Generating chat title for: \(firstMessage.prefix(50))...")
+
+        let titlePrompt = """
+        Generate a concise 2-3 word title that captures the essence of this question or message. \
+        Only respond with the title itself, nothing else.
+
+        Message: \(firstMessage)
+        """
+
+        let messages: [MessageParameter.Message] = [
+            MessageParameter.Message(
+                role: .user,
+                content: .text(titlePrompt)
+            )
+        ]
+
+        let parameters = MessageParameter(
+            model: .other(APIConfiguration.claudeModel),
+            messages: messages,
+            maxTokens: 20  // Keep it short - we only need 2-3 words
+        )
+
+        let response = try await service.createMessage(parameters)
+
+        // Extract text from the response content
+        if let content = response.content.first {
+            switch content {
+            case .text(let text):
+                let title = text.trimmingCharacters(in: .whitespacesAndNewlines)
+                print("🟢 [AnthropicService] Generated title: \(title)")
+                return title
+            default:
+                print("🔴 [AnthropicService] Unexpected response format for title generation")
+                throw NSError(domain: "AnthropicService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Invalid response format"])
+            }
+        }
+
+        print("🔴 [AnthropicService] Empty response for title generation")
+        throw NSError(domain: "AnthropicService", code: -1, userInfo: [NSLocalizedDescriptionKey: "Empty response"])
+    }
+
     // Build message history for API call
     private func buildMessageHistory(
         context: [ChatMessage],
