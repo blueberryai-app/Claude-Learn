@@ -12,13 +12,13 @@ enum LearningMode: String, CaseIterable, Codable, Hashable {
         case .standard:
             return "text.bubble"
         case .writing:
-            return "pencil.and.outline"
+            return "writing_mode"
         case .debate:
-            return "person.2.fill"
+            return "debate_mode"
         case .mimic:
-            return "theatermasks"
+            return "mimic"
         case .quiz:
-            return "questionmark.circle"
+            return "quiz_me"
         }
     }
 

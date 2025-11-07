@@ -291,6 +291,10 @@ class ChatViewModel: ObservableObject {
             }
         } else {
             currentMode = mode
+            // Clear lens when switching to a non-standard mode (mutually exclusive)
+            if mode != .standard {
+                currentLens = nil
+            }
             if mode == .mimic {
                 showCustomEntityAlert = true
             }
@@ -304,6 +308,16 @@ class ChatViewModel: ObservableObject {
 
         // Update current lens
         currentLens = lens
+
+        // Switch to standard mode when applying a non-None lens (mutually exclusive)
+        if lens != nil && lens?.name != "None" {
+            // Exit quiz mode if active
+            if currentMode == .quiz {
+                exitQuizMode()
+            } else {
+                currentMode = .standard
+            }
+        }
 
         // If lens is changing and we have messages in the conversation, send a hidden message
         if isChanging && !messages.isEmpty {

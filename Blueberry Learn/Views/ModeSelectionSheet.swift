@@ -36,9 +36,11 @@ struct ModeSelectionSheet: View {
 
                     // Learning Lens selector
                     HStack(spacing: 12) {
-                        Image(systemName: "sparkles")
-                            .font(.system(size: 20))
-                            .frame(width: 30)
+                        Image("learning_lens")
+                            .renderingMode(.template)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 20, height: 20)
 
                         Text("Learning Lens")
                             .font(.system(size: 17))
@@ -118,9 +120,12 @@ struct ModeToggleRow: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 14) {
-                Image(systemName: mode.icon)
-                    .font(.system(size: 20))
-                    .frame(width: 30)
+                Image(mode.icon)
+                    .renderingMode(.template)
+                    .resizable()
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: 24, height: 24)
+                    .foregroundColor(isSelected ? Color.blue : .primary)
 
                 Text(mode.rawValue)
                     .font(.system(size: 17))

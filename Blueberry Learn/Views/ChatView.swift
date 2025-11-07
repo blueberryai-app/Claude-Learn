@@ -256,6 +256,39 @@ struct ChatView: View {
                             )
                         }
 
+                        // Learning Lens
+                        Menu {
+                            ForEach(LearningLens.availableLenses, id: \.name) { lens in
+                                Button(lens.name) {
+                                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                        viewModel.applyLens(lens.name == "None" ? nil : lens)
+                                    }
+                                }
+                            }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image("learning_lens")
+                                    .renderingMode(.template)
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(width: 24, height: 24)
+                                    .foregroundColor(viewModel.currentLens != nil && viewModel.currentLens?.name != "None" ? .blue : .primary)
+
+                                if let lens = viewModel.currentLens, lens.name != "None" {
+                                    Text(lens.name)
+                                        .font(.system(size: 14, weight: .medium))
+                                        .foregroundColor(.blue)
+                                        .transition(.opacity.combined(with: .scale(scale: 0.8, anchor: .leading)))
+                                }
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 6)
+                            .background(
+                                Capsule()
+                                    .fill(viewModel.currentLens != nil && viewModel.currentLens?.name != "None" ? Color.blue.opacity(0.1) : Color.clear)
+                            )
+                        }
+
                         Spacer()
                     }
                 }
@@ -380,8 +413,12 @@ struct MessageBubble: View {
             VStack(alignment: message.role == .user ? .trailing : .leading, spacing: 4) {
                 if let mode = message.activeMode, mode != .standard {
                     HStack(spacing: 4) {
-                        Image(systemName: mode.icon)
-                            .font(.caption2)
+                        Image(mode.icon)
+                            .renderingMode(.template)
+                            .resizable()
+                            .aspectRatio(contentMode: .fit)
+                            .frame(width: 12, height: 12)
+                            .foregroundColor(.secondary)
                         Text(mode.rawValue)
                             .font(.caption2)
                         if let lens = message.activeLens {
