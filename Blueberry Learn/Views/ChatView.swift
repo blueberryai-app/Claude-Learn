@@ -399,14 +399,14 @@ struct MessageBubble: View {
                     } else {
                         // Normal markdown content
                         Markdown(message.content)
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 10)
+                            .padding(.horizontal, message.role == .user ? 16 : 0)
+                            .padding(.vertical, message.role == .user ? 10 : 0)
                             .background(
                                 message.role == .user ?
-                                Color.blue : Color(.systemGray6)
+                                Color.tileBackground : Color.clear
                             )
-                            .foregroundColor(message.role == .user ? .white : .primary)
-                            .cornerRadius(16)
+                            .foregroundColor(.primary)
+                            .cornerRadius(message.role == .user ? 16 : 0)
                     }
 
                     if isStreaming && message.role == .assistant && message.quizData == nil {
