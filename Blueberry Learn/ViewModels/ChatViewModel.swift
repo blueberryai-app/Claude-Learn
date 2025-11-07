@@ -307,11 +307,18 @@ class ChatViewModel: ObservableObject {
     // MARK: - Frustration Button Methods
 
     var isFrustrationButtonDisabled: Bool {
+        let currentUserMessageCount = messages.filter { $0.role == .user }.count
+
+        // Disable if no messages have been sent yet
+        if currentUserMessageCount == 0 {
+            return true
+        }
+
+        // Check cooldown period
         guard let pressedAtCount = frustrationButtonPressedAtMessageCount else {
             return false // Button is enabled if never pressed
         }
 
-        let currentUserMessageCount = messages.filter { $0.role == .user }.count
         return currentUserMessageCount < pressedAtCount + 3
     }
 
