@@ -76,6 +76,10 @@ struct ChatView: View {
                     }
                     .padding()
                 }
+                .scrollDismissesKeyboard(.interactively)
+                .onTapGesture {
+                    isInputFocused = false
+                }
                 .onChange(of: viewModel.messages.count) {
                     withAnimation {
                         proxy.scrollTo(viewModel.messages.last?.id, anchor: .bottom)
