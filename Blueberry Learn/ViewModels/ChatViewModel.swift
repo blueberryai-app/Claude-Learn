@@ -595,7 +595,187 @@ class ChatViewModel: ObservableObject {
         }
     }
 
+    func requestNextQuestion() {
+        // Cancel any existing streaming task
+        streamingTask?.cancel()
+
+        errorMessage = nil
+        streamingMessageContent = ""
+        isLoading = true
+
+        // Create a hidden user message requesting the next question
+        let hiddenUserMessage = ChatMessage(
+            content: "Thanks, lets move on to the next question (or end the quiz if all questions are through).",
+            role: .user,
+            activeMode: currentMode,
+            activeLens: currentLens?.name,
+            isHidden: true
+        )
+        messages.append(hiddenUserMessage)
+        session.messages.append(hiddenUserMessage)
+
+        // Create a placeholder for the assistant's response
+        let assistantMessage = ChatMessage(
+            content: "",
+            role: .assistant,
+            activeMode: currentMode,
+            activeLens: currentLens?.name
+        )
+        messages.append(assistantMessage)
+
+        // Add empty assistant message to session
+        session.messages.append(assistantMessage)
+
+        // Update last message date
+        session.lastMessageDate = Date()
+
+        // If this is a new unsaved session, save it now
+        if isNewSession {
+            var sessions = storageService.loadSessions()
+            sessions.append(session)
+            storageService.saveSessions(sessions)
+            isNewSession = false
+        } else {
+            storageService.updateSession(session)
+        }
+
+        // Start streaming response
+        streamingTask = Task {
+            do {
+                print("🟡 [ChatViewModel] Requesting next question...")
+
+                let stream = try await anthropicService.streamMessage(
+                    prompt: "Thanks, lets move on to the next question (or end the quiz if all questions are through).",
+                    context: Array(messages.dropLast(1)), // Exclude the empty assistant message
+                    mode: currentMode,
+                    customEntityName: currentMode == .mimic ? customEntityName : nil,
+                    sessionTimerDescription: sessionTimer.getSessionDescription(),
+                    quizType: quizSession?.quizType
+                )
+
+                print("🟢 [ChatViewModel] Next question stream obtained...")
+
+                var fullResponse = ""
+                for try await chunk in stream {
+                    fullResponse += chunk
+                    await MainActor.run {
+                        self.streamingMessageContent = fullResponse
+                        // Update the last message with streaming content
+                        if let lastIndex = self.messages.indices.last {
+                            self.messages[lastIndex].content = fullResponse
+                        }
+                    }
+                }
+
+                // Save the complete message
+                await MainActor.run {
+                    if let lastIndex = self.messages.indices.last {
+                        // Handle quiz mode - parse JSON and clear content
+                        if self.currentMode == .quiz {
+                            if let quizResponse = self.parseQuizResponse(from: fullResponse) {
+                                // Success! Reset retry count and clear invalid response
+                                self.quizRetryCount = 0
+                                self.lastInvalidQuizResponse = nil
+
+                                self.messages[lastIndex].content = "" // Clear raw JSON from display
+                                self.messages[lastIndex].quizData = quizResponse
+                                self.handleQuizResponse(quizResponse)
+
+                                // Update session with quiz data
+                                self.session.messages[lastIndex].content = "" // Don't store JSON
+                                self.session.messages[lastIndex].quizData = quizResponse
+                            } else {
+                                // Failed to parse JSON - attempt retry
+                                self.lastInvalidQuizResponse = fullResponse
+                                print("🔴 [ChatViewModel] Failed to parse quiz JSON (attempt \(self.quizRetryCount + 1)/\(self.maxQuizRetries)): \(fullResponse)")
+
+                                if self.quizRetryCount < self.maxQuizRetries {
+                                    // Remove the failed message
+                                    self.messages.removeLast()
+                                    self.session.messages.removeLast()
+
+                                    // Trigger retry with correction prompt
+                                    self.retryQuizWithCorrectionPrompt()
+                                } else {
+                                    // Exhausted retries, show error to user
+                                    self.messages[lastIndex].content = "⚠️ Quiz Error: Unable to generate valid quiz response after \(self.maxQuizRetries) attempts. Please try starting the quiz again."
+                                    print("🔴 [ChatViewModel] Exhausted all quiz retries")
+                                    self.quizRetryCount = 0
+                                    self.lastInvalidQuizResponse = nil
+                                }
+                            }
+                        }
+
+                        self.session.lastMessageDate = Date()
+                        self.storageService.updateSession(self.session)
+                    }
+                    self.isLoading = false
+                    self.streamingMessageContent = ""
+                }
+            } catch {
+                print("🔴 [ChatViewModel] Error in requestNextQuestion: \(error)")
+                await MainActor.run {
+                    var errorMessage = "Failed to get next question"
+
+                    if (error as NSError).code == -1009 {
+                        errorMessage = "No internet connection. Please check your network."
+                    } else if error.localizedDescription.contains("401") || error.localizedDescription.contains("authentication") {
+                        errorMessage = "Invalid API key. Please check your API key in APIConfiguration.swift"
+                    } else if error.localizedDescription.contains("429") {
+                        errorMessage = "Rate limit exceeded. Please wait a moment and try again."
+                    } else {
+                        errorMessage += ": \(error.localizedDescription)"
+                    }
+
+                    self.errorMessage = errorMessage
+                    self.isLoading = false
+                    // Remove the empty assistant message on error
+                    if self.messages.last?.content.isEmpty == true {
+                        self.messages.removeLast()
+                    }
+                    // Also remove the hidden user message on error
+                    if let secondToLast = self.messages.dropLast().last, secondToLast.isHidden {
+                        self.messages.removeLast()
+                    }
+                }
+            }
+        }
+    }
+
     func exitQuizMode() {
+        // Send hidden message to LLM that quiz mode is over
+        if !messages.isEmpty {
+            let quizExitMessage = """
+            🎓 QUIZ MODE HAS ENDED 🎓
+
+            You are now exiting quiz mode. From this message forward:
+
+            ✅ RETURN TO NATURAL LANGUAGE RESPONSES
+            ✅ NO MORE JSON FORMATTING
+            ✅ RESPOND CONVERSATIONALLY as the educational assistant Claude Learn
+
+            If the user continues the conversation, engage with them naturally as you normally would.
+            Provide educational support using regular conversational text, not JSON.
+            """
+
+            let hiddenMessage = ChatMessage(
+                content: quizExitMessage,
+                role: .user,
+                activeMode: .standard,
+                activeLens: currentLens?.name,
+                isHidden: true
+            )
+
+            messages.append(hiddenMessage)
+            session.messages.append(hiddenMessage)
+            session.lastMessageDate = Date()
+
+            if !isNewSession {
+                storageService.updateSession(session)
+            }
+        }
+
+        // Reset quiz state
         quizSession = nil
         selectedMultipleChoiceAnswer = nil
         hasSubmittedCurrentAnswer = false

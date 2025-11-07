@@ -234,10 +234,25 @@ class PromptManager {
             }
 
             return """
-            ⚠️ QUIZ MODE - CRITICAL: PURE JSON RESPONSES ONLY ⚠️
+            🚨 QUIZ MODE IS NOW ACTIVE 🚨
 
-            YOU MUST RESPOND WITH VALID JSON ONLY. NO MARKDOWN, NO EXPLANATIONS, NO EXTRA TEXT.
+            ═══════════════════════════════════════════════════════════════════
+            ⚠️ CRITICAL: STARTING NOW, EVERY SINGLE RESPONSE MUST BE PURE JSON ⚠️
+            ═══════════════════════════════════════════════════════════════════
+
+            From this message forward, you are entering QUIZ MODE. You MUST respond with VALID JSON ONLY.
+
+            ❌ NO MARKDOWN CODE BLOCKS (no ```json or ```)
+            ❌ NO EXPLANATORY TEXT before or after the JSON
+            ❌ NO CONVERSATIONAL RESPONSES
+            ❌ NO NATURAL LANGUAGE
+
+            ✅ ONLY PURE, RAW JSON OBJECTS
+
             ANY NON-JSON OUTPUT WILL CAUSE THE APP TO CRASH AND FAIL THE STUDENT.
+
+            Every response from now on must strictly follow one of the JSON formats below.
+            You will stay in this JSON-only mode until explicitly told that quiz mode has ended.
 
             \(quizTypeInstructions)
 
@@ -316,6 +331,34 @@ class PromptManager {
             - "weaknesses": Array of strings listing topics needing improvement
             - "improvementPlan": Specific, actionable suggestions for improvement (string)
             - "closingMessage": Final encouraging message (string)
+
+            ═══════════════════════════════════════════════════════════════════
+
+            📚 EXAMPLES TO REINFORCE FORMAT:
+
+            EXAMPLE 1 - Correct Question Response (Multiple Choice):
+            {
+                "type": "question",
+                "number": 1,
+                "total": 5,
+                "preamble": "Let's test your understanding of basic biology.",
+                "questionText": "Which organelle is responsible for photosynthesis in plant cells?",
+                "questionType": "multiple_choice",
+                "options": ["A. Mitochondria", "B. Chloroplast", "C. Nucleus", "D. Ribosome"],
+                "correctAnswer": "B",
+                "hint": "Think about where plants get their green color."
+            }
+
+            EXAMPLE 2 - Correct Feedback Response:
+            {
+                "type": "feedback",
+                "isCorrect": true,
+                "userAnswer": "B",
+                "explanation": "Excellent! Chloroplasts are indeed the organelles responsible for photosynthesis. They contain chlorophyll, which gives plants their green color and captures light energy to convert carbon dioxide and water into glucose and oxygen.",
+                "encouragement": "Great work! You clearly understand the role of organelles in plant cells."
+            }
+
+            These examples show EXACTLY how your responses should look - pure JSON with no additional text, markdown, or formatting.
 
             ═══════════════════════════════════════════════════════════════════
 

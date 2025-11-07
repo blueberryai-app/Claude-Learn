@@ -92,9 +92,9 @@ struct ChatView: View {
                 Divider()
 
                 VStack(spacing: 12) {
-                    // Input field - hide when awaiting MC answer
-                    if !(viewModel.quizSession?.currentQuestion?.questionType == .multipleChoice &&
-                         viewModel.quizSession?.isAwaitingAnswer == true) {
+                    // Input field - hide when in multiple choice quiz mode
+                    if viewModel.quizSession?.quizType != .multipleChoice ||
+                       viewModel.quizSession?.isComplete == true {
                         HStack(spacing: 8) {
                             TextField("Ask a question or describe what you want to learn", text: $viewModel.inputText)
                                 .textFieldStyle(PlainTextFieldStyle())

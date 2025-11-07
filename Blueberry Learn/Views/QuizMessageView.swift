@@ -11,7 +11,7 @@ struct QuizMessageView: View {
         case .question:
             QuizQuestionView(quizData: quizData, viewModel: viewModel)
         case .feedback:
-            QuizFeedbackView(quizData: quizData)
+            QuizFeedbackView(quizData: quizData, viewModel: viewModel)
         case .quizComplete:
             QuizCompleteView(quizData: quizData)
         case .quizStart:
@@ -74,6 +74,7 @@ struct QuizQuestionView: View {
 // Display feedback after an answer
 struct QuizFeedbackView: View {
     let quizData: QuizResponse
+    @ObservedObject var viewModel: ChatViewModel
 
     private var feedbackColor: Color {
         return (quizData.isCorrect ?? false) ? .green : .orange
@@ -132,6 +133,27 @@ struct QuizFeedbackView: View {
                     .foregroundColor(.secondary)
                     .italic()
                     .padding(.top, 4)
+            }
+
+            // Next question button for multiple choice
+            if viewModel.quizSession?.quizType == .multipleChoice,
+               !(viewModel.quizSession?.isComplete ?? false) {
+                Button(action: {
+                    viewModel.requestNextQuestion()
+                }) {
+                    HStack {
+                        Spacer()
+                        Text("Next question")
+                            .font(.system(size: 16, weight: .semibold))
+                        Image(systemName: "arrow.right")
+                        Spacer()
+                    }
+                    .foregroundColor(.white)
+                    .padding(.vertical, 12)
+                    .background(Color.claudeOrange)
+                    .cornerRadius(12)
+                }
+                .padding(.top, 8)
             }
         }
         .padding(16)
