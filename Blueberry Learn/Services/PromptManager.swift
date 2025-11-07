@@ -5,14 +5,12 @@ class PromptManager {
 
     private init() {}
 
-    // Get complete system prompt for a learning space with mode and lens
+    // Get complete system prompt for a learning space with mode
     func getSystemPrompt(
         for space: LearningSpace,
         mode: LearningMode,
-        lens: LearningLens?,
         customEntityName: String? = nil,
-        sessionTimerDescription: String? = nil,
-        frustrationSignal: Bool = false
+        sessionTimerDescription: String? = nil
     ) -> String {
         var components: [String] = []
 
@@ -29,19 +27,9 @@ class PromptManager {
         // Mode-specific behavior
         components.append(getModeInstructions(mode, entityName: customEntityName))
 
-        // Learning lens modifier
-        if let lens = lens, lens.name != "None" {
-            components.append(getLensInstructions(lens))
-        }
-
         // Timer instructions if active
         if let timerDesc = sessionTimerDescription {
             components.append(getTimerInstructions(timerDesc))
-        }
-
-        // Frustration signal - user needs a different approach
-        if frustrationSignal {
-            components.append(getFrustrationInstructions())
         }
 
         // General guidelines
@@ -282,7 +270,7 @@ class PromptManager {
     }
 
     // Get frustration signal instructions
-    private func getFrustrationInstructions() -> String {
+    func getFrustrationInstructions() -> String {
         return """
         IMPORTANT - STUDENT IS FEELING FRUSTRATED:
         The student has just pressed the frustration button because they're feeling stuck with the current approach.
@@ -317,6 +305,58 @@ class PromptManager {
 
         Remember: They pressed this button because they need help and emotional support. Make a SIGNIFICANT change in your approach and be their ally.
         """
+    }
+
+    // Get learning lens change instructions
+    func getLensChangeInstructions(newLens: LearningLens?, previousLens: LearningLens?) -> String {
+        // Case 1: Deactivating lens (going to None)
+        if newLens == nil || newLens?.name == "None" {
+            if let prevLens = previousLens, prevLens.name != "None" {
+                return """
+                LEARNING LENS UPDATE - Removing \(prevLens.name) Theme:
+                The student has deactivated the \(prevLens.name) learning lens.
+
+                From now on:
+                • Stop using \(prevLens.name) analogies and references
+                • Return to standard explanations without thematic framing
+                • Use general examples and explanations appropriate to the subject matter
+                • Focus on clear, direct teaching without themed metaphors
+
+                Continue teaching effectively but without the thematic lens.
+                """
+            }
+            return "" // No change needed if already None
+        }
+
+        // Case 2: Switching between lenses
+        if let prevLens = previousLens, prevLens.name != "None", let newLens = newLens {
+            return """
+            LEARNING LENS UPDATE - Switching from \(prevLens.name) to \(newLens.name):
+            The student has changed their learning lens from \(prevLens.name) to \(newLens.name).
+
+            IMMEDIATELY:
+            • Stop using \(prevLens.name) references and analogies
+            • Begin using \(newLens.name) themed explanations
+
+            \(getLensInstructions(newLens))
+
+            Make this transition natural in your next response. You can briefly acknowledge the theme change if appropriate.
+            """
+        }
+
+        // Case 3: Activating lens from None
+        if let newLens = newLens, newLens.name != "None" {
+            return """
+            LEARNING LENS ACTIVATED - \(newLens.name):
+            The student has activated the \(newLens.name) learning lens to make learning more engaging.
+
+            \(getLensInstructions(newLens))
+
+            Start incorporating these themed references naturally in your responses to enhance understanding and engagement.
+            """
+        }
+
+        return ""
     }
 
     // Format user message based on mode (if needed)

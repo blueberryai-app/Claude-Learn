@@ -3,7 +3,6 @@ import SwiftUI
 struct ModeSelectionSheet: View {
     @ObservedObject var viewModel: ChatViewModel
     @Environment(\.dismiss) var dismiss
-    @State private var selectedLens = "Star Wars"
 
     var body: some View {
         NavigationStack {
@@ -49,13 +48,12 @@ struct ModeSelectionSheet: View {
                         Menu {
                             ForEach(LearningLens.availableLenses, id: \.name) { lens in
                                 Button(lens.name) {
-                                    selectedLens = lens.name
                                     viewModel.applyLens(lens.name == "None" ? nil : lens)
                                 }
                             }
                         } label: {
                             HStack(spacing: 6) {
-                                Text(selectedLens)
+                                Text(viewModel.currentLens?.name ?? "None")
                                     .font(.system(size: 15))
                                     .foregroundColor(.secondary)
                                 Image(systemName: "chevron.down")

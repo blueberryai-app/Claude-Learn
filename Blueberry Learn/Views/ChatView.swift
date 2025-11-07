@@ -44,7 +44,7 @@ struct ChatView: View {
                         if viewModel.messages.isEmpty {
                             EmptyStateView(icon: space.icon)
                         } else {
-                            ForEach(viewModel.messages) { message in
+                            ForEach(viewModel.messages.filter { !$0.isHidden }) { message in
                                 VStack(spacing: 12) {
                                     MessageBubble(
                                         message: message,

@@ -9,13 +9,14 @@ struct ChatMessage: Identifiable, Codable, Equatable, Hashable {
     var activeMode: LearningMode?
     var activeLens: String? // For POC, just store lens name as string
     var quizData: QuizResponse? // Parsed quiz JSON data
+    var isHidden: Bool // Messages that are sent to API but not shown in UI
 
     enum MessageRole: String, Codable {
         case user
         case assistant
     }
 
-    init(content: String, role: MessageRole, spaceId: UUID, activeMode: LearningMode? = nil, activeLens: String? = nil, quizData: QuizResponse? = nil) {
+    init(content: String, role: MessageRole, spaceId: UUID, activeMode: LearningMode? = nil, activeLens: String? = nil, quizData: QuizResponse? = nil, isHidden: Bool = false) {
         self.id = UUID()
         self.content = content
         self.role = role
@@ -24,6 +25,7 @@ struct ChatMessage: Identifiable, Codable, Equatable, Hashable {
         self.activeMode = activeMode
         self.activeLens = activeLens
         self.quizData = quizData
+        self.isHidden = isHidden
     }
 }
 

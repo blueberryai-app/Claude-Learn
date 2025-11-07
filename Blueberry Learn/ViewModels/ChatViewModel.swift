@@ -81,6 +81,29 @@ class ChatViewModel: ObservableObject {
         // Cancel any existing streaming task
         streamingTask?.cancel()
 
+        // Check if this is the first user message and a lens is already selected
+        let isFirstUserMessage = messages.filter({ $0.role == .user && !$0.isHidden }).isEmpty
+        if isFirstUserMessage && currentLens != nil {
+            // Send hidden lens activation message before the first user message
+            let lensInstructions = promptManager.getLensChangeInstructions(
+                newLens: currentLens,
+                previousLens: nil
+            )
+
+            if !lensInstructions.isEmpty {
+                let hiddenLensMessage = ChatMessage(
+                    content: lensInstructions,
+                    role: .user,
+                    spaceId: space.id,
+                    activeMode: currentMode,
+                    activeLens: currentLens?.name,
+                    isHidden: true
+                )
+                messages.append(hiddenLensMessage)
+                session.messages.append(hiddenLensMessage)
+            }
+        }
+
         // Add user message
         let userMessage = ChatMessage(
             content: inputText,
@@ -140,7 +163,6 @@ class ChatViewModel: ObservableObject {
                     context: Array(messages.dropLast(2)), // Exclude the user message we just added and empty assistant message
                     space: space,
                     mode: currentMode,
-                    lens: currentLens,
                     customEntityName: currentMode == .mimic ? customEntityName : nil,
                     sessionTimerDescription: sessionTimer.getSessionDescription()
                 )
@@ -243,7 +265,44 @@ class ChatViewModel: ObservableObject {
     }
 
     func applyLens(_ lens: LearningLens?) {
+        // Check if lens is actually changing
+        let previousLens = currentLens
+        let isChanging = (previousLens?.name != lens?.name)
+
+        // Update current lens
         currentLens = lens
+
+        // If lens is changing and we have messages in the conversation, send a hidden message
+        if isChanging && !messages.isEmpty {
+            // Get lens change instructions from PromptManager
+            let lensInstructions = promptManager.getLensChangeInstructions(
+                newLens: lens,
+                previousLens: previousLens
+            )
+
+            // Only send hidden message if there are instructions (lens actually changed)
+            if !lensInstructions.isEmpty {
+                // Create a hidden user message with the lens change instructions
+                let hiddenMessage = ChatMessage(
+                    content: lensInstructions,
+                    role: .user,
+                    spaceId: space.id,
+                    activeMode: currentMode,
+                    activeLens: lens?.name,
+                    isHidden: true
+                )
+
+                // Append to both messages and session
+                messages.append(hiddenMessage)
+                session.messages.append(hiddenMessage)
+
+                // Update session
+                session.lastMessageDate = Date()
+                if !isNewSession {
+                    storageService.updateSession(session)
+                }
+            }
+        }
     }
 
     func cancelStreaming() {
@@ -356,6 +415,21 @@ class ChatViewModel: ObservableObject {
         streamingMessageContent = ""
         isLoading = true
 
+        // Get frustration instructions from PromptManager
+        let frustrationInstructions = promptManager.getFrustrationInstructions()
+
+        // Create a hidden user message with the frustration instructions
+        let hiddenUserMessage = ChatMessage(
+            content: frustrationInstructions,
+            role: .user,
+            spaceId: space.id,
+            activeMode: currentMode,
+            activeLens: currentLens?.name,
+            isHidden: true
+        )
+        messages.append(hiddenUserMessage)
+        session.messages.append(hiddenUserMessage)
+
         // Create a placeholder for the assistant's response
         let assistantMessage = ChatMessage(
             content: "",
@@ -369,29 +443,32 @@ class ChatViewModel: ObservableObject {
         // Add empty assistant message to session
         session.messages.append(assistantMessage)
 
+        // Update last message date
+        session.lastMessageDate = Date()
+
         // If this is a new unsaved session, save it now
         if isNewSession {
             var sessions = storageService.loadSessions(for: space.id)
             sessions.append(session)
             storageService.saveSessions(sessions, for: space.id)
             isNewSession = false
+        } else {
+            storageService.updateSession(session)
         }
 
-        // Start streaming response with frustration signal
+        // Start streaming response with frustration context
         streamingTask = Task {
             do {
                 print("🟡 [ChatViewModel] Starting frustration signal stream...")
 
-                // Send empty prompt but with frustration signal set
+                // Send a generic continuation prompt
                 let stream = try await anthropicService.streamMessage(
-                    prompt: "Please continue helping me with this topic.",
+                    prompt: "Please respond to my situation.",
                     context: Array(messages.dropLast(1)), // Exclude the empty assistant message
                     space: space,
                     mode: currentMode,
-                    lens: currentLens,
                     customEntityName: currentMode == .mimic ? customEntityName : nil,
-                    sessionTimerDescription: sessionTimer.getSessionDescription(),
-                    frustrationSignal: true
+                    sessionTimerDescription: sessionTimer.getSessionDescription()
                 )
 
                 print("🟢 [ChatViewModel] Frustration signal stream obtained...")
@@ -450,6 +527,10 @@ class ChatViewModel: ObservableObject {
                     self.isLoading = false
                     // Remove the empty assistant message on error
                     if self.messages.last?.content.isEmpty == true {
+                        self.messages.removeLast()
+                    }
+                    // Also remove the hidden user message on error
+                    if let secondToLast = self.messages.dropLast().last, secondToLast.isHidden {
                         self.messages.removeLast()
                     }
                 }
