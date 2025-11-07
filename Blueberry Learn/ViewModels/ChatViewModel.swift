@@ -31,6 +31,9 @@ class ChatViewModel: ObservableObject {
     @Published var pendingQuizTopic: String?
     @Published var selectedMultipleChoiceAnswer: String?
     @Published var hasSubmittedCurrentAnswer = false
+    private var quizRetryCount = 0
+    private var maxQuizRetries = 5
+    private var lastInvalidQuizResponse: String?
 
     // Computed property to check if quiz is active and locked
     var isQuizLocked: Bool {
@@ -174,7 +177,8 @@ class ChatViewModel: ObservableObject {
                     context: Array(messages.dropLast(2)), // Exclude the user message we just added and empty assistant message
                     mode: currentMode,
                     customEntityName: currentMode == .mimic ? customEntityName : nil,
-                    sessionTimerDescription: sessionTimer.getSessionDescription()
+                    sessionTimerDescription: sessionTimer.getSessionDescription(),
+                    quizType: quizSession?.quizType
                 )
 
                 print("🟢 [ChatViewModel] Stream obtained, starting to receive chunks...")
@@ -197,6 +201,10 @@ class ChatViewModel: ObservableObject {
                         // Handle quiz mode specially - parse JSON and clear content
                         if self.currentMode == .quiz {
                             if let quizResponse = self.parseQuizResponse(from: fullResponse) {
+                                // Success! Reset retry count and clear invalid response
+                                self.quizRetryCount = 0
+                                self.lastInvalidQuizResponse = nil
+
                                 self.messages[lastIndex].content = "" // Clear raw JSON from display
                                 self.messages[lastIndex].quizData = quizResponse
                                 self.handleQuizResponse(quizResponse)
@@ -205,9 +213,24 @@ class ChatViewModel: ObservableObject {
                                 self.session.messages[lastIndex].content = "" // Don't store JSON
                                 self.session.messages[lastIndex].quizData = quizResponse
                             } else {
-                                // Failed to parse JSON, show error to user
-                                self.messages[lastIndex].content = "⚠️ Quiz Error: Invalid response format. Please try again."
-                                print("🔴 [ChatViewModel] Failed to parse quiz JSON: \(fullResponse)")
+                                // Failed to parse JSON - attempt retry
+                                self.lastInvalidQuizResponse = fullResponse
+                                print("🔴 [ChatViewModel] Failed to parse quiz JSON (attempt \(self.quizRetryCount + 1)/\(self.maxQuizRetries)): \(fullResponse)")
+
+                                if self.quizRetryCount < self.maxQuizRetries {
+                                    // Remove the failed message
+                                    self.messages.removeLast()
+                                    self.session.messages.removeLast()
+
+                                    // Trigger retry with correction prompt
+                                    self.retryQuizWithCorrectionPrompt()
+                                } else {
+                                    // Exhausted retries, show error to user
+                                    self.messages[lastIndex].content = "⚠️ Quiz Error: Unable to generate valid quiz response after \(self.maxQuizRetries) attempts. Please try starting the quiz again."
+                                    print("🔴 [ChatViewModel] Exhausted all quiz retries")
+                                    self.quizRetryCount = 0
+                                    self.lastInvalidQuizResponse = nil
+                                }
                             }
                         } else {
                             // Normal mode: just store the content
@@ -473,7 +496,8 @@ class ChatViewModel: ObservableObject {
                     context: Array(messages.dropLast(1)), // Exclude the empty assistant message
                     mode: currentMode,
                     customEntityName: currentMode == .mimic ? customEntityName : nil,
-                    sessionTimerDescription: sessionTimer.getSessionDescription()
+                    sessionTimerDescription: sessionTimer.getSessionDescription(),
+                    quizType: quizSession?.quizType
                 )
 
                 print("🟢 [ChatViewModel] Frustration signal stream obtained...")
@@ -645,6 +669,130 @@ class ChatViewModel: ObservableObject {
                     weaknesses: weaknesses,
                     improvementPlan: improvementPlan
                 )
+            }
+        }
+    }
+
+    private func retryQuizWithCorrectionPrompt() {
+        guard let quizType = quizSession?.quizType,
+              let invalidResponse = lastInvalidQuizResponse else {
+            print("🔴 [ChatViewModel] Cannot retry - missing quiz type or invalid response")
+            return
+        }
+
+        // Increment retry count
+        quizRetryCount += 1
+
+        print("🟡 [ChatViewModel] Retrying quiz with correction prompt (attempt \(quizRetryCount)/\(maxQuizRetries))")
+
+        // Get correction prompt from PromptManager
+        let correctionPrompt = promptManager.getQuizCorrectionPrompt(
+            invalidResponse: invalidResponse,
+            attempt: quizRetryCount,
+            quizType: quizType
+        )
+
+        // Add correction prompt as a user message (but don't display it)
+        let correctionUserMessage = ChatMessage(content: correctionPrompt, role: .user)
+        messages.append(correctionUserMessage)
+        session.messages.append(correctionUserMessage)
+
+        // Add empty assistant message placeholder for streaming
+        let assistantMessage = ChatMessage(content: "", role: .assistant)
+        messages.append(assistantMessage)
+        session.messages.append(assistantMessage)
+
+        isLoading = true
+
+        // Restart the streaming task with correction prompt
+        streamingTask?.cancel()
+        streamingTask = Task {
+            do {
+                print("🟡 [ChatViewModel] Sending correction prompt to model...")
+
+                let stream = try await anthropicService.streamMessage(
+                    prompt: correctionPrompt,
+                    context: Array(messages.dropLast(2)), // Exclude the correction message we just added and empty assistant message
+                    mode: currentMode,
+                    customEntityName: currentMode == .mimic ? customEntityName : nil,
+                    sessionTimerDescription: sessionTimer.getSessionDescription(),
+                    quizType: quizSession?.quizType
+                )
+
+                var fullResponse = ""
+                for try await chunk in stream {
+                    fullResponse += chunk
+                    await MainActor.run {
+                        self.streamingMessageContent = fullResponse
+                        // Update the last message with streaming content
+                        if let lastIndex = self.messages.indices.last {
+                            self.messages[lastIndex].content = fullResponse
+                        }
+                    }
+                }
+
+                // Process the retry response
+                await MainActor.run {
+                    if let lastIndex = self.messages.indices.last {
+                        if let quizResponse = self.parseQuizResponse(from: fullResponse) {
+                            // Success! Reset retry count
+                            self.quizRetryCount = 0
+                            self.lastInvalidQuizResponse = nil
+
+                            // Remove the correction prompt message from display (keep only for context)
+                            if self.messages.count >= 2 {
+                                let correctionMsgIndex = self.messages.count - 2
+                                self.messages[correctionMsgIndex].content = "" // Hide correction prompt
+                                self.session.messages[correctionMsgIndex].content = ""
+                            }
+
+                            self.messages[lastIndex].content = "" // Clear raw JSON from display
+                            self.messages[lastIndex].quizData = quizResponse
+                            self.handleQuizResponse(quizResponse)
+
+                            // Update session with quiz data
+                            self.session.messages[lastIndex].content = ""
+                            self.session.messages[lastIndex].quizData = quizResponse
+                        } else {
+                            // Still failed - recursive retry
+                            self.lastInvalidQuizResponse = fullResponse
+                            print("🔴 [ChatViewModel] Retry failed, still invalid JSON (attempt \(self.quizRetryCount)/\(self.maxQuizRetries))")
+
+                            if self.quizRetryCount < self.maxQuizRetries {
+                                // Remove the failed retry messages
+                                if self.messages.count >= 2 {
+                                    self.messages.removeLast(2) // Remove both correction prompt and failed response
+                                    self.session.messages.removeLast(2)
+                                }
+
+                                // Try again
+                                self.retryQuizWithCorrectionPrompt()
+                            } else {
+                                // Exhausted all retries
+                                self.messages[lastIndex].content = "⚠️ Quiz Error: Unable to generate valid quiz response after \(self.maxQuizRetries) attempts. Please try starting the quiz again."
+                                print("🔴 [ChatViewModel] Exhausted all quiz retries")
+                                self.quizRetryCount = 0
+                                self.lastInvalidQuizResponse = nil
+                            }
+                        }
+
+                        self.session.lastMessageDate = Date()
+                        self.storageService.updateSession(self.session)
+                    }
+                    self.isLoading = false
+                    self.streamingMessageContent = ""
+                }
+            } catch {
+                print("🔴 [ChatViewModel] Error during quiz retry: \(error)")
+                await MainActor.run {
+                    if let lastIndex = self.messages.indices.last {
+                        self.messages[lastIndex].content = "⚠️ Error during quiz retry: \(error.localizedDescription)"
+                    }
+                    self.isLoading = false
+                    self.streamingMessageContent = ""
+                    self.quizRetryCount = 0
+                    self.lastInvalidQuizResponse = nil
+                }
             }
         }
     }

@@ -25,14 +25,16 @@ class AnthropicService {
         context: [ChatMessage],
         mode: LearningMode,
         customEntityName: String? = nil,
-        sessionTimerDescription: String? = nil
+        sessionTimerDescription: String? = nil,
+        quizType: QuizType? = nil
     ) async throws -> AsyncThrowingStream<String, Error> {
         let messages = buildMessageHistory(
             context: context,
             currentPrompt: prompt,
             mode: mode,
             customEntityName: customEntityName,
-            sessionTimerDescription: sessionTimerDescription
+            sessionTimerDescription: sessionTimerDescription,
+            quizType: quizType
         )
 
         print("🔵 [AnthropicService] Preparing to stream message")
@@ -80,14 +82,16 @@ class AnthropicService {
         context: [ChatMessage],
         mode: LearningMode,
         customEntityName: String? = nil,
-        sessionTimerDescription: String? = nil
+        sessionTimerDescription: String? = nil,
+        quizType: QuizType? = nil
     ) async throws -> String {
         let messages = buildMessageHistory(
             context: context,
             currentPrompt: prompt,
             mode: mode,
             customEntityName: customEntityName,
-            sessionTimerDescription: sessionTimerDescription
+            sessionTimerDescription: sessionTimerDescription,
+            quizType: quizType
         )
 
         let parameters = MessageParameter(
@@ -159,7 +163,8 @@ class AnthropicService {
         currentPrompt: String,
         mode: LearningMode,
         customEntityName: String? = nil,
-        sessionTimerDescription: String? = nil
+        sessionTimerDescription: String? = nil,
+        quizType: QuizType? = nil
     ) -> [MessageParameter.Message] {
         var messages: [MessageParameter.Message] = []
 
@@ -167,7 +172,8 @@ class AnthropicService {
         let systemPrompt = buildSystemPrompt(
             mode: mode,
             customEntityName: customEntityName,
-            sessionTimerDescription: sessionTimerDescription
+            sessionTimerDescription: sessionTimerDescription,
+            quizType: quizType
         )
 
         // Add system prompt as first message (user/assistant pair)
@@ -257,13 +263,15 @@ class AnthropicService {
     private func buildSystemPrompt(
         mode: LearningMode,
         customEntityName: String? = nil,
-        sessionTimerDescription: String? = nil
+        sessionTimerDescription: String? = nil,
+        quizType: QuizType? = nil
     ) -> String {
         // Use the PromptManager for consistent prompt generation
         return PromptManager.shared.getSystemPrompt(
             mode: mode,
             customEntityName: customEntityName,
-            sessionTimerDescription: sessionTimerDescription
+            sessionTimerDescription: sessionTimerDescription,
+            quizType: quizType
         )
     }
 }

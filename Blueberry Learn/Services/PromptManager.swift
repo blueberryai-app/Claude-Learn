@@ -9,7 +9,8 @@ class PromptManager {
     func getSystemPrompt(
         mode: LearningMode,
         customEntityName: String? = nil,
-        sessionTimerDescription: String? = nil
+        sessionTimerDescription: String? = nil,
+        quizType: QuizType? = nil
     ) -> String {
         var components: [String] = []
 
@@ -130,7 +131,7 @@ class PromptManager {
         """)
 
         // Mode-specific behavior
-        components.append(getModeInstructions(mode, entityName: customEntityName))
+        components.append(getModeInstructions(mode, entityName: customEntityName, quizType: quizType))
 
         // Timer instructions if active
         if let timerDesc = sessionTimerDescription {
@@ -141,7 +142,7 @@ class PromptManager {
     }
 
     // Get mode-specific instructions
-    private func getModeInstructions(_ mode: LearningMode, entityName: String? = nil) -> String {
+    private func getModeInstructions(_ mode: LearningMode, entityName: String? = nil, quizType: QuizType? = nil) -> String {
         switch mode {
         case .standard:
             return """
@@ -171,39 +172,178 @@ class PromptManager {
             """
 
         case .quiz:
-            return """
-            QUIZ MODE - PURE JSON RESPONSES ONLY:
+            // Determine quiz type-specific instructions
+            let quizTypeInstructions: String
+            let questionExample: String
 
-            You must respond ONLY with valid JSON for quiz interactions. No other text.
+            if let type = quizType {
+                switch type {
+                case .multipleChoice:
+                    quizTypeInstructions = """
+                    QUIZ TYPE: MULTIPLE CHOICE
+                    - Generate questions with exactly 4 answer options
+                    - Label options as "A", "B", "C", "D"
+                    - Include the "options" field with an array of 4 strings
+                    - Include the "correctAnswer" field with the letter of the correct option ("A", "B", "C", or "D")
+                    - Include "questionType": "multiple_choice" in every question
+                    """
 
-            For creating a question, respond with EXACTLY this structure:
-            {
-                "type": "question",
-                "preamble": "Brief context or introduction (optional)",
-                "questionText": "The actual question",
-                "choices": ["Option A", "Option B", "Option C", "Option D"],
-                "hint": "Optional hint for the student"
+                    questionExample = """
+                    {
+                        "type": "question",
+                        "number": 1,
+                        "total": 5,
+                        "preamble": "Let's start with the basics.",
+                        "questionText": "What is the powerhouse of the cell?",
+                        "questionType": "multiple_choice",
+                        "options": ["A. Nucleus", "B. Mitochondria", "C. Ribosome", "D. Chloroplast"],
+                        "correctAnswer": "B",
+                        "hint": "Think about where energy is produced."
+                    }
+                    """
+
+                case .extendedResponse:
+                    quizTypeInstructions = """
+                    QUIZ TYPE: EXTENDED RESPONSE
+                    - Generate open-ended questions that require written explanations
+                    - DO NOT include the "options" field
+                    - DO NOT include the "correctAnswer" field
+                    - Include "questionType": "extended_response" in every question
+                    - You will evaluate the student's written answer and provide qualitative feedback
+                    """
+
+                    questionExample = """
+                    {
+                        "type": "question",
+                        "number": 1,
+                        "total": 5,
+                        "preamble": "Let's explore your understanding in depth.",
+                        "questionText": "Explain the process of photosynthesis and why it is important for life on Earth.",
+                        "questionType": "extended_response",
+                        "hint": "Consider what plants need and what they produce."
+                    }
+                    """
+                }
+            } else {
+                // Fallback if quiz type not provided
+                quizTypeInstructions = """
+                QUIZ TYPE: NOT SPECIFIED (ERROR)
+                If you see this, the quiz type was not properly set. Default to multiple choice format.
+                """
+                questionExample = ""
             }
 
-            For providing feedback after an answer, respond with:
+            return """
+            ⚠️ QUIZ MODE - CRITICAL: PURE JSON RESPONSES ONLY ⚠️
+
+            YOU MUST RESPOND WITH VALID JSON ONLY. NO MARKDOWN, NO EXPLANATIONS, NO EXTRA TEXT.
+            ANY NON-JSON OUTPUT WILL CAUSE THE APP TO CRASH AND FAIL THE STUDENT.
+
+            \(quizTypeInstructions)
+
+            ═══════════════════════════════════════════════════════════════════
+
+            📋 RESPONSE FORMAT REQUIREMENTS:
+
+            1️⃣ WHEN CREATING A QUESTION:
+
+            Required JSON structure (copy this EXACTLY, replacing values):
+            \(questionExample)
+
+            REQUIRED FIELDS:
+            - "type": MUST be "question"
+            - "number": Current question number (integer, starting at 1)
+            - "total": Total number of questions in quiz (integer, typically 5-10)
+            - "questionText": The question to ask (string)
+            - "questionType": MUST match quiz type ("\(quizType?.rawValue ?? "multiple_choice")")
+
+            OPTIONAL FIELDS:
+            - "preamble": Brief context before the question (string, can be omitted)
+            - "hint": Helpful hint for the student (string, can be omitted)
+
+            ═══════════════════════════════════════════════════════════════════
+
+            2️⃣ WHEN PROVIDING FEEDBACK ON AN ANSWER:
+
+            Required JSON structure:
             {
                 "type": "feedback",
-                "isCorrect": true/false,
-                "feedback": "Explanation of why the answer is correct/incorrect",
-                "correctAnswer": "The correct answer (only if incorrect)",
-                "nextStep": "What happens next (e.g., 'Ready for the next question?' or 'Let's try again')"
+                "isCorrect": true,
+                "userAnswer": "B",
+                "explanation": "Correct! The mitochondria are indeed the powerhouse of the cell, responsible for producing ATP through cellular respiration.",
+                "encouragement": "Great job! You really understand cellular biology."
             }
 
-            For ending the quiz, respond with:
+            OR if incorrect:
+
             {
-                "type": "complete",
-                "summary": "Overall performance summary",
-                "correctCount": number,
-                "totalCount": number,
-                "encouragement": "Positive message about their effort"
+                "type": "feedback",
+                "isCorrect": false,
+                "userAnswer": "A",
+                "explanation": "Not quite. While the nucleus is important as the cell's control center, the mitochondria are actually responsible for energy production.",
+                "encouragement": "Don't worry! This is a tricky concept. Let's keep going!"
             }
 
-            CRITICAL: Output NOTHING except the JSON. No explanations, no markdown, just the JSON object.
+            REQUIRED FIELDS:
+            - "type": MUST be "feedback"
+            - "isCorrect": Boolean (true or false, NOT a string)
+            - "userAnswer": What the student answered (string)
+            - "explanation": Detailed explanation of why the answer is correct/incorrect (string)
+            - "encouragement": Positive, motivational message (string)
+
+            ═══════════════════════════════════════════════════════════════════
+
+            3️⃣ WHEN ENDING THE QUIZ:
+
+            Required JSON structure:
+            {
+                "type": "quiz_complete",
+                "score": "7/10",
+                "percentage": 70,
+                "summary": "You showed a solid understanding of cellular biology with room to improve on more complex concepts.",
+                "strengths": ["Cell structure", "Basic organelle functions", "Energy production concepts"],
+                "weaknesses": ["Photosynthesis details", "Membrane transport mechanisms"],
+                "improvementPlan": "Focus on reviewing the detailed steps of photosynthesis and practice problems involving membrane transport. Consider drawing diagrams to visualize these processes.",
+                "closingMessage": "Great effort! Keep studying and you'll master these concepts in no time."
+            }
+
+            REQUIRED FIELDS:
+            - "type": MUST be "quiz_complete"
+            - "score": String in format "X/Y" (e.g., "7/10")
+            - "percentage": Integer from 0-100 (NOT a string)
+            - "summary": Brief overall performance summary (string)
+            - "strengths": Array of strings listing topics the student understood well
+            - "weaknesses": Array of strings listing topics needing improvement
+            - "improvementPlan": Specific, actionable suggestions for improvement (string)
+            - "closingMessage": Final encouraging message (string)
+
+            ═══════════════════════════════════════════════════════════════════
+
+            ⚠️ CRITICAL RULES - FAILURE TO FOLLOW WILL BREAK THE APP:
+
+            1. Output ONLY valid JSON. No text before or after the JSON object.
+            2. Do NOT wrap JSON in markdown code blocks (no ```json or ```)
+            3. Do NOT include explanations, comments, or any text outside the JSON
+            4. Use double quotes for all strings, not single quotes
+            5. Boolean values must be lowercase: true or false (not "true" or "false")
+            6. Numbers must be actual numbers, not strings (percentage: 70, not "70")
+            7. Arrays must use proper JSON array syntax with square brackets
+            8. Field names must EXACTLY match the specifications above
+            9. For multiple choice: always include "options" array and "correctAnswer" string
+            10. For extended response: never include "options" or "correctAnswer" fields
+
+            ═══════════════════════════════════════════════════════════════════
+
+            QUIZ FLOW:
+            1. User starts quiz on a topic
+            2. You generate question 1 (JSON)
+            3. User answers
+            4. You provide feedback (JSON)
+            5. You generate question 2 (JSON)
+            6. Continue for total number of questions (typically 5-10)
+            7. After last feedback, you provide quiz_complete summary (JSON)
+
+            Remember: EVERY response must be valid JSON matching one of the three formats above.
             """
 
         case .mimic:
@@ -259,6 +399,111 @@ class PromptManager {
         LEARNING LENS APPLIED: \(newLens.name)
         \(newLens.themeDescription)
         """
+    }
+
+    // Get correction prompt for quiz mode when JSON parsing fails
+    func getQuizCorrectionPrompt(invalidResponse: String, attempt: Int, quizType: QuizType) -> String {
+        // Get increasingly strict with each retry attempt
+        let urgencyLevel: String
+        let showInvalidResponse: Bool
+
+        switch attempt {
+        case 1:
+            // First retry - gentle reminder
+            urgencyLevel = "REMINDER"
+            showInvalidResponse = false
+        case 2:
+            // Second retry - show what went wrong
+            urgencyLevel = "⚠️ ERROR"
+            showInvalidResponse = true
+        case 3...4:
+            // Third+ retry - very strict
+            urgencyLevel = "🚨 CRITICAL ERROR"
+            showInvalidResponse = true
+        default:
+            urgencyLevel = "⚠️ ERROR"
+            showInvalidResponse = false
+        }
+
+        var correctionMessage = """
+        \(urgencyLevel): Your previous response was not valid JSON and could not be parsed.
+
+        """
+
+        if showInvalidResponse {
+            correctionMessage += """
+            YOUR INVALID RESPONSE WAS:
+            ---
+            \(invalidResponse.prefix(500))
+            ---
+
+            """
+        }
+
+        correctionMessage += """
+        You MUST respond with PURE JSON ONLY. This is attempt \(attempt + 1).
+
+        COMMON MISTAKES TO AVOID:
+        1. ❌ Wrapping JSON in markdown code blocks (```json or ```)
+        2. ❌ Including explanatory text before or after the JSON
+        3. ❌ Using single quotes instead of double quotes
+        4. ❌ Forgetting commas between fields
+        5. ❌ Using string values for numbers (e.g., "70" instead of 70)
+        6. ❌ Using string values for booleans (e.g., "true" instead of true)
+        7. ❌ Missing required fields
+        8. ❌ Using incorrect field names
+
+        CORRECT FORMAT EXAMPLE for \(quizType.displayName):
+        """
+
+        // Add type-specific example
+        switch quizType {
+        case .multipleChoice:
+            correctionMessage += """
+
+            {
+                "type": "question",
+                "number": 1,
+                "total": 5,
+                "questionText": "What is 2 + 2?",
+                "questionType": "multiple_choice",
+                "options": ["A. 3", "B. 4", "C. 5", "D. 6"],
+                "correctAnswer": "B"
+            }
+
+            CRITICAL: You MUST include "options" array and "correctAnswer" for multiple choice questions.
+            """
+
+        case .extendedResponse:
+            correctionMessage += """
+
+            {
+                "type": "question",
+                "number": 1,
+                "total": 5,
+                "questionText": "Explain the water cycle.",
+                "questionType": "extended_response"
+            }
+
+            CRITICAL: You MUST NOT include "options" or "correctAnswer" for extended response questions.
+            """
+        }
+
+        correctionMessage += """
+
+
+        NOW: Please respond ONLY with valid JSON. Nothing else. No text. No explanations. Just JSON.
+        """
+
+        if attempt >= 3 {
+            correctionMessage += """
+
+
+            ⚠️ THIS IS YOUR LAST CHANCE. If you cannot provide valid JSON, the quiz will fail.
+            """
+        }
+
+        return correctionMessage
     }
 
     // Truncate context if it exceeds token limits
