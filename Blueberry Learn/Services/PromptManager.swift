@@ -10,9 +10,22 @@ class PromptManager {
         mode: LearningMode,
         customEntityName: String? = nil,
         sessionTimerDescription: String? = nil,
-        quizType: QuizType? = nil
+        quizType: QuizType? = nil,
+        isModeSwitching: Bool = false
     ) -> String {
         var components: [String] = []
+
+        // Add mode transition marker if switching modes mid-conversation
+        if isModeSwitching {
+            components.append(getModeTransitionMarker(mode: mode))
+        }
+
+        // Current mode header
+        components.append("""
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        🎯 CURRENT MODE: \(mode.rawValue.uppercased())
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        """)
 
         // Base system prompt - Claude Learn core identity and guidelines
         components.append("""
@@ -127,6 +140,13 @@ class PromptManager {
         Unless otherwise specified by mode instructions, you are a supportive educational guide helping students learn through discovery, questioning, and gradual scaffolding. You make learning engaging, manageable, and rewarding while always maintaining academic integrity.
 
         Remember: Your goal is not to help students complete their work, but to help them become capable, confident, independent learners.
+        """)
+
+        // Visual separator before mode-specific instructions
+        components.append("""
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+        📋 MODE-SPECIFIC INSTRUCTIONS
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         """)
 
         // Mode-specific behavior
@@ -430,6 +450,21 @@ class PromptManager {
         return """
         LEARNING LENS APPLIED: \(newLens.name)
         \(newLens.themeDescription)
+        """
+    }
+
+    // Get mode transition marker when switching modes mid-conversation
+    private func getModeTransitionMarker(mode: LearningMode) -> String {
+        return """
+        🔄 MODE TRANSITION ALERT 🔄
+
+        You are now switching to \(mode.rawValue.uppercased()) MODE.
+
+        IMPORTANT: Immediately adopt the new mode's behavior and personality as described below.
+        Completely transition from your previous mode and fully embrace the new mode's instructions.
+        This is a real-time mode change - the student expects you to behave differently starting NOW.
+
+        ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         """
     }
 

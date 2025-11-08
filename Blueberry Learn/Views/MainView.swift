@@ -200,13 +200,13 @@ struct FilesInfoSheet: View {
                     Text("Files")
                         .font(.system(size: 24, weight: .bold))
 
-                    Text("This is a prototype feature")
-                        .font(.system(size: 15))
-                        .foregroundColor(.secondary)
+//                    Text("This is a prototype feature")
+//                        .font(.system(size: 15))
+//                        .foregroundColor(.secondary)
                 }
 
                 // Production feature description
-                Text("In the production app, you could upload and manage files to give Claude context:")
+                Text("In the real production app, this is where you could upload and manage files to give Claude context:")
                     .font(.system(size: 15))
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -266,13 +266,13 @@ struct InstructionsInfoSheet: View {
                     Text("Instructions")
                         .font(.system(size: 24, weight: .bold))
 
-                    Text("This is a prototype feature")
-                        .font(.system(size: 15))
-                        .foregroundColor(.secondary)
+//                    Text("This is a prototype feature")
+//                        .font(.system(size: 15))
+//                        .foregroundColor(.secondary)
                 }
 
                 // Production feature description
-                Text("In the production app, you could create custom instructions to personalize how Claude helps you:")
+                Text("In the real production app, this is where you could create custom instructions to personalize how Claude helps you:")
                     .font(.system(size: 15))
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)

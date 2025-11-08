@@ -26,15 +26,20 @@ class AnthropicService {
         mode: LearningMode,
         customEntityName: String? = nil,
         sessionTimerDescription: String? = nil,
-        quizType: QuizType? = nil
+        quizType: QuizType? = nil,
+        isModeSwitching: Bool = false
     ) async throws -> AsyncThrowingStream<String, Error> {
-        let messages = buildMessageHistory(
-            context: context,
-            currentPrompt: prompt,
+        let systemPrompt = buildSystemPrompt(
             mode: mode,
             customEntityName: customEntityName,
             sessionTimerDescription: sessionTimerDescription,
-            quizType: quizType
+            quizType: quizType,
+            isModeSwitching: isModeSwitching
+        )
+
+        let messages = buildMessageHistory(
+            context: context,
+            currentPrompt: prompt
         )
 
         print("🔵 [AnthropicService] Preparing to stream message")
@@ -48,7 +53,7 @@ class AnthropicService {
             model: .other(APIConfiguration.claudeModel),
             messages: messages,
             maxTokens: APIConfiguration.maxTokens,
-            system: nil
+            system: .text(systemPrompt)
         )
 
         return AsyncThrowingStream { continuation in
@@ -83,21 +88,27 @@ class AnthropicService {
         mode: LearningMode,
         customEntityName: String? = nil,
         sessionTimerDescription: String? = nil,
-        quizType: QuizType? = nil
+        quizType: QuizType? = nil,
+        isModeSwitching: Bool = false
     ) async throws -> String {
-        let messages = buildMessageHistory(
-            context: context,
-            currentPrompt: prompt,
+        let systemPrompt = buildSystemPrompt(
             mode: mode,
             customEntityName: customEntityName,
             sessionTimerDescription: sessionTimerDescription,
-            quizType: quizType
+            quizType: quizType,
+            isModeSwitching: isModeSwitching
+        )
+
+        let messages = buildMessageHistory(
+            context: context,
+            currentPrompt: prompt
         )
 
         let parameters = MessageParameter(
             model: .other(APIConfiguration.claudeModel),
             messages: messages,
-            maxTokens: APIConfiguration.maxTokens
+            maxTokens: APIConfiguration.maxTokens,
+            system: .text(systemPrompt)
         )
 
         let response = try await service.createMessage(parameters)
@@ -160,31 +171,9 @@ class AnthropicService {
     // Build message history for API call
     private func buildMessageHistory(
         context: [ChatMessage],
-        currentPrompt: String,
-        mode: LearningMode,
-        customEntityName: String? = nil,
-        sessionTimerDescription: String? = nil,
-        quizType: QuizType? = nil
+        currentPrompt: String
     ) -> [MessageParameter.Message] {
         var messages: [MessageParameter.Message] = []
-
-        // Get system prompt with timing info
-        let systemPrompt = buildSystemPrompt(
-            mode: mode,
-            customEntityName: customEntityName,
-            sessionTimerDescription: sessionTimerDescription,
-            quizType: quizType
-        )
-
-        // Add system prompt as first message (user/assistant pair)
-        messages.append(MessageParameter.Message(
-            role: .user,
-            content: .text("System: \(systemPrompt)")
-        ))
-        messages.append(MessageParameter.Message(
-            role: .assistant,
-            content: .text("Understood. I'll follow those instructions for our conversation.")
-        ))
 
         // Add conversation history (limit to last 10 messages for context window)
         let recentContext = context.suffix(10)
@@ -264,14 +253,16 @@ class AnthropicService {
         mode: LearningMode,
         customEntityName: String? = nil,
         sessionTimerDescription: String? = nil,
-        quizType: QuizType? = nil
+        quizType: QuizType? = nil,
+        isModeSwitching: Bool = false
     ) -> String {
         // Use the PromptManager for consistent prompt generation
         return PromptManager.shared.getSystemPrompt(
             mode: mode,
             customEntityName: customEntityName,
             sessionTimerDescription: sessionTimerDescription,
-            quizType: quizType
+            quizType: quizType,
+            isModeSwitching: isModeSwitching
         )
     }
 }

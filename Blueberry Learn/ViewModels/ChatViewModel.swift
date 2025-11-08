@@ -48,6 +48,9 @@ class ChatViewModel: ObservableObject {
     private var streamingTask: Task<Void, Never>?
     private var timerObserver: AnyCancellable?
 
+    // Track mode switching for clearer LLM communication
+    private var previousMode: LearningMode?
+
     init(sessionId: UUID? = nil) {
         // Load existing session or create new one (in memory only)
         if let sessionId = sessionId,
@@ -172,14 +175,23 @@ class ChatViewModel: ObservableObject {
                 print("🟡 [ChatViewModel] Current lens: \(currentLens?.name ?? "none")")
                 print("🟡 [ChatViewModel] Message count: \(messages.count)")
 
+                // Check if this is a mode switch (previousMode is set and different from currentMode)
+                let isModeSwitching = previousMode != nil && previousMode != currentMode
+
                 let stream = try await anthropicService.streamMessage(
                     prompt: currentInput,
                     context: Array(messages.dropLast(2)), // Exclude the user message we just added and empty assistant message
                     mode: currentMode,
                     customEntityName: currentMode == .mimic ? customEntityName : nil,
                     sessionTimerDescription: sessionTimer.getSessionDescription(),
-                    quizType: quizSession?.quizType
+                    quizType: quizSession?.quizType,
+                    isModeSwitching: isModeSwitching
                 )
+
+                // Clear previousMode after passing to the API
+                await MainActor.run {
+                    self.previousMode = nil
+                }
 
                 print("🟢 [ChatViewModel] Stream obtained, starting to receive chunks...")
 
@@ -285,11 +297,19 @@ class ChatViewModel: ObservableObject {
     func switchMode(_ mode: LearningMode) {
         // Toggle: if already in this mode, switch back to standard
         if currentMode == mode {
+            // Only mark as mode switching if we have messages (mid-conversation)
+            if !messages.isEmpty {
+                previousMode = currentMode
+            }
             currentMode = .standard
             if mode == .quiz {
                 exitQuizMode()
             }
         } else {
+            // Only mark as mode switching if we have messages (mid-conversation)
+            if !messages.isEmpty && currentMode != mode {
+                previousMode = currentMode
+            }
             currentMode = mode
             // Clear lens when switching to a non-standard mode (mutually exclusive)
             if mode != .standard {
@@ -511,7 +531,8 @@ class ChatViewModel: ObservableObject {
                     mode: currentMode,
                     customEntityName: currentMode == .mimic ? customEntityName : nil,
                     sessionTimerDescription: sessionTimer.getSessionDescription(),
-                    quizType: quizSession?.quizType
+                    quizType: quizSession?.quizType,
+                    isModeSwitching: false // Not a mode switch, just frustration signal
                 )
 
                 print("🟢 [ChatViewModel] Frustration signal stream obtained...")
@@ -664,7 +685,8 @@ class ChatViewModel: ObservableObject {
                     mode: currentMode,
                     customEntityName: currentMode == .mimic ? customEntityName : nil,
                     sessionTimerDescription: sessionTimer.getSessionDescription(),
-                    quizType: quizSession?.quizType
+                    quizType: quizSession?.quizType,
+                    isModeSwitching: false // Quiz continuation, not a mode switch
                 )
 
                 print("🟢 [ChatViewModel] Next question stream obtained...")
@@ -910,7 +932,8 @@ class ChatViewModel: ObservableObject {
                     mode: currentMode,
                     customEntityName: currentMode == .mimic ? customEntityName : nil,
                     sessionTimerDescription: sessionTimer.getSessionDescription(),
-                    quizType: quizSession?.quizType
+                    quizType: quizSession?.quizType,
+                    isModeSwitching: false // Quiz retry, not a mode switch
                 )
 
                 var fullResponse = ""
