@@ -143,7 +143,7 @@ struct QuizFeedbackView: View {
                 }) {
                     HStack {
                         Spacer()
-                        Text("Next question")
+                        Text("Continue")
                             .font(.system(size: 16, weight: .semibold))
                         Image(systemName: "arrow.right")
                         Spacer()

@@ -885,6 +885,9 @@ class ChatViewModel: ObservableObject {
                     weaknesses: weaknesses,
                     improvementPlan: improvementPlan
                 )
+
+                // Automatically exit quiz mode when quiz is complete
+                exitQuizMode()
             }
         }
     }
