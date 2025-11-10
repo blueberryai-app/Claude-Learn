@@ -1,4 +1,4 @@
-# Claude Learn  
+# [Claude Learn]([https://github.com/jamesrochabrun/SwiftAnthropic](http://claudelearn.com))  
 ### A human-centered study companion powered by the Claude API
 
 
