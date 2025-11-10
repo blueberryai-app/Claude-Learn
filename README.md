@@ -1,7 +1,7 @@
 # Claude Learn  
 ### A human-centered study companion powered by the Claude API
 
-<img width="700" height="493" alt="Screenshot 2025-11-08 at 1 46 28 PM" src="https://github.com/user-attachments/assets/17dbec2d-eaaf-4bcc-a2dd-9e4d325d70ee" />
+<img width="798" height="433" alt="Screenshot 2025-11-10 at 10 34 36 AM" src="https://github.com/user-attachments/assets/980b72d8-9dad-4c2e-b31b-91eaae0486b4" />
 
 
 Claude Learn reimagines how people learn with AI.  
