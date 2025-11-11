@@ -46,40 +46,102 @@ Claude manages pacing, breaks, and goals to keep learning sustainable, and offer
 
 ---
 
-## Tech Stack
+## Technical Architecture
 
-- **Platform**: iOS (SwiftUI)
-- **AI Integration**: Anthropic Claude API via [SwiftAnthropic](https://github.com/jamesrochabrun/SwiftAnthropic)
-- **Architecture**: MVVM (Model-View-ViewModel)
-- **Storage**: Local persistence using UserDefaults and Codable
-- **Language**: Swift
+### Core Stack
+- **Platform**: Native iOS 15+ with SwiftUI
+- **Language**: Swift 5.9+
+- **AI Provider**: Anthropic Claude API (Sonnet 4.5)
+- **SDK**: [SwiftAnthropic](https://github.com/jamesrochabrun/SwiftAnthropic) for type-safe API integration
 
-## Project Structure (simplified)
+### Architecture & Design Patterns
 
-```
+**MVVM (Model-View-ViewModel)**
+- Clean separation of concerns with reactive state management
+- `@StateObject` and `@ObservedObject` for unidirectional data flow
+- View models handle business logic and API orchestration
+- Models are pure Swift structs conforming to `Codable` for serialization
+
+**Service Layer**
+- `AnthropicService`: Manages streaming responses and API communication
+- `PromptManager`: Centralized prompt engineering with mode-specific system instructions
+- `StorageService`: Local persistence layer with atomic writes and data integrity checks
+- `APIConfiguration`: Secure credential management and model configuration
+
+### Front-End Implementation
+
+**SwiftUI Components**
+- Fully declarative UI with no UIKit dependencies
+- Custom markdown rendering for formatted AI responses
+- Real-time streaming message display with typing indicators
+- Adaptive layouts supporting iPhone and iPad (portrait/landscape)
+
+**State Management**
+- Reactive architecture using Combine framework
+- `@Published` properties for automatic UI updates
+- Debounced input handling for optimal performance
+
+### AI Integration
+
+**Streaming Architecture**
+- Server-Sent Events (SSE) for real-time response streaming
+- Incremental message rendering with sub-second latency
+- Graceful error handling and automatic retry logic
+- Token-efficient context management (maintains conversation history without redundancy)
+
+**Prompt Engineering**
+- Dynamic system prompts tailored to each learning mode
+- Context-aware adaptations based on user frustration signals
+- Session timer integration for pacing recommendations
+- Quiz mode with structured JSON response parsing
+
+### Data Persistence
+
+**Local-First Architecture**
+- `UserDefaults` for lightweight session and settings storage
+- `Codable` protocol for type-safe serialization
+- Automatic chat history persistence across app launches
+- Configurable data retention policies
+
+**Data Models**
+- `ChatSession`: Conversation threads with metadata (mode, timestamp, message count)
+- `ChatMessage`: Individual messages with role-based typing and streaming state
+- `QuizModels`: Structured quiz questions, answers, and analytics
+- `SessionTimer`: Time-boxed learning sessions with break management
+
+### Security & Configuration
+- Secure API key storage with in-app configuration
+- No telemetry or external analytics (privacy-first design)
+- Client-side only processing (no intermediate servers)
+
+---
+
+## Project Structure
+
+```swift
 Blueberry Learn/
-├── Models/
-│   ├── ChatMessage.swift          # Chat message data model
-│   ├── ChatSession.swift          # Chat session management
-│   ├── LearningMode.swift         # Learning modes and lenses
-│   ├── QuizModels.swift           # Quiz-related data structures
-│   └── SessionTimer.swift         # Session timer logic
-├── Views/
-│   ├── MainView.swift             # Main screen with chat history
-│   ├── ChatView.swift             # Chat interface
-│   ├── ModeSelectionSheet.swift   # Mode and lens selection
-│   ├── SettingsView.swift         # Settings and API key config
-│   └── Quiz*.swift                # Quiz-related views
-├── ViewModels/
-│   ├── ChatViewModel.swift        # Chat logic and state management
-│   └── MainViewModel.swift        # Main screen logic
-├── Services/
-│   ├── AnthropicService.swift     # Claude API integration
-│   ├── APIConfiguration.swift     # API key and model configuration
-│   ├── PromptManager.swift        # System prompts and instructions
-│   └── StorageService.swift       # Local data persistence
+├── Models/                        # Data layer (Codable structs)
+│   ├── ChatMessage.swift          # Message data with streaming support
+│   ├── ChatSession.swift          # Session metadata and persistence
+│   ├── LearningMode.swift         # Mode/lens enumerations and properties
+│   ├── QuizModels.swift           # Quiz questions, answers, analytics
+│   └── SessionTimer.swift         # Timer state and logic
+├── Views/                         # SwiftUI presentation layer
+│   ├── MainView.swift             # Session list and navigation
+│   ├── ChatView.swift             # Real-time chat interface
+│   ├── ModeSelectionSheet.swift   # Mode picker with descriptions
+│   ├── SettingsView.swift         # API configuration
+│   └── Quiz*.swift                # Quiz UI components
+├── ViewModels/                    # Business logic and state
+│   ├── ChatViewModel.swift        # Chat orchestration, API calls, message handling
+│   └── MainViewModel.swift        # Session management
+├── Services/                      # Infrastructure layer
+│   ├── AnthropicService.swift     # Claude API client wrapper
+│   ├── APIConfiguration.swift     # Credentials and model settings
+│   ├── PromptManager.swift        # System prompt templates
+│   └── StorageService.swift       # Persistence utilities
 └── Theme/
-    └── Colors.swift               # App color scheme
+    └── Colors.swift               # Design tokens and color palette
 ```
 
 ---
