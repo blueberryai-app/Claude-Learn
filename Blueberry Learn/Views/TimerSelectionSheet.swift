@@ -34,6 +34,8 @@ struct TimerSelectionSheet: View {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
                     ForEach(presets, id: \.self) { minutes in
                         Button(action: {
+                            let generator = UIImpactFeedbackGenerator(style: .light)
+                            generator.impactOccurred()
                             onSelection(minutes)
                             isPresented = false
                         }) {
@@ -70,6 +72,8 @@ struct TimerSelectionSheet: View {
                             .foregroundColor(.secondary)
 
                         Button("Start") {
+                            let generator = UIImpactFeedbackGenerator(style: .light)
+                            generator.impactOccurred()
                             submitCustomDuration()
                         }
                         .buttonStyle(.borderedProminent)
@@ -78,6 +82,8 @@ struct TimerSelectionSheet: View {
                     .padding(.horizontal)
                 } else {
                     Button(action: {
+                        let generator = UIImpactFeedbackGenerator(style: .light)
+                        generator.impactOccurred()
                         showingCustomInput = true
                         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             isCustomInputFocused = true
@@ -116,6 +122,8 @@ struct TimerSelectionSheet: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
+                        let generator = UIImpactFeedbackGenerator(style: .light)
+                        generator.impactOccurred()
                         isPresented = false
                     }
                 }

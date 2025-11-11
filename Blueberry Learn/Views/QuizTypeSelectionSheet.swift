@@ -29,6 +29,8 @@ struct QuizTypeSelectionSheet: View {
                     QuizTypeOptionButton(
                         type: .multipleChoice,
                         action: {
+                            let generator = UIImpactFeedbackGenerator(style: .light)
+                            generator.impactOccurred()
                             viewModel.selectQuizType(.multipleChoice)
                             dismiss()
                         }
@@ -37,6 +39,8 @@ struct QuizTypeSelectionSheet: View {
                     QuizTypeOptionButton(
                         type: .extendedResponse,
                         action: {
+                            let generator = UIImpactFeedbackGenerator(style: .light)
+                            generator.impactOccurred()
                             viewModel.selectQuizType(.extendedResponse)
                             dismiss()
                         }
@@ -50,6 +54,8 @@ struct QuizTypeSelectionSheet: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("Cancel") {
+                        let generator = UIImpactFeedbackGenerator(style: .light)
+                        generator.impactOccurred()
                         dismiss()
                     }
                 }

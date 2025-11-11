@@ -108,6 +108,8 @@ struct ChatView: View {
                                 }
 
                             Button(action: {
+                                let generator = UIImpactFeedbackGenerator(style: .light)
+                                generator.impactOccurred()
                                 viewModel.sendMessage()
                             }) {
                                 Image(systemName: "arrow.up")
@@ -125,6 +127,8 @@ struct ChatView: View {
                     HStack(spacing: 10) {
                         // Plus button to open full mode selection
                         Button(action: {
+                            let generator = UIImpactFeedbackGenerator(style: .light)
+                            generator.impactOccurred()
                             viewModel.isShowingModeSelection.toggle()
                         }) {
                             Image(systemName: "plus")
@@ -136,6 +140,8 @@ struct ChatView: View {
 
                         // Debate Me
                         Button(action: {
+                            let generator = UIImpactFeedbackGenerator(style: .light)
+                            generator.impactOccurred()
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 viewModel.switchMode(.debate)
                             }
@@ -167,6 +173,8 @@ struct ChatView: View {
 
                         // Mimic Mode
                         Button(action: {
+                            let generator = UIImpactFeedbackGenerator(style: .light)
+                            generator.impactOccurred()
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 viewModel.switchMode(.mimic)
                             }
@@ -198,6 +206,8 @@ struct ChatView: View {
 
                         // Quiz Me
                         Button(action: {
+                            let generator = UIImpactFeedbackGenerator(style: .light)
+                            generator.impactOccurred()
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 viewModel.switchMode(.quiz)
                             }
@@ -229,6 +239,8 @@ struct ChatView: View {
                         Menu {
                             ForEach(LearningLens.availableLenses, id: \.name) { lens in
                                 Button(lens.name) {
+                                    let generator = UIImpactFeedbackGenerator(style: .light)
+                                    generator.impactOccurred()
                                     withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                         viewModel.applyLens(lens.name == "None" ? nil : lens)
                                     }
@@ -273,6 +285,8 @@ struct ChatView: View {
             if viewModel.sessionTimer.isActive {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
+                        let generator = UIImpactFeedbackGenerator(style: .light)
+                        generator.impactOccurred()
                         viewModel.showNavigationAlert = true
                     }) {
                         HStack(spacing: 4) {
@@ -287,6 +301,8 @@ struct ChatView: View {
                 HStack(spacing: 16) {
                     // Timer button - shows clock or progress
                     Button(action: {
+                        let generator = UIImpactFeedbackGenerator(style: .light)
+                        generator.impactOccurred()
                         if viewModel.sessionTimer.isActive {
                             viewModel.isShowingTimerDetail = true
                         } else {

@@ -25,6 +25,8 @@ struct ModeSelectionSheet: View {
                                 mode: mode,
                                 isSelected: viewModel.currentMode == mode,
                                 action: {
+                                    let generator = UIImpactFeedbackGenerator(style: .light)
+                                    generator.impactOccurred()
                                     viewModel.switchMode(mode)
                                     if mode != .mimic {
                                         dismiss()
@@ -50,6 +52,8 @@ struct ModeSelectionSheet: View {
                         Menu {
                             ForEach(LearningLens.availableLenses, id: \.name) { lens in
                                 Button(lens.name) {
+                                    let generator = UIImpactFeedbackGenerator(style: .light)
+                                    generator.impactOccurred()
                                     viewModel.applyLens(lens.name == "None" ? nil : lens)
                                 }
                             }
@@ -77,6 +81,8 @@ struct ModeSelectionSheet: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(action: {
+                        let generator = UIImpactFeedbackGenerator(style: .light)
+                        generator.impactOccurred()
                         dismiss()
                     }) {
                         Image(systemName: "xmark")

@@ -69,6 +69,8 @@ struct TimerDetailSheet: View {
             VStack(spacing: 12) {
                 if !timer.hasExpired {
                     Button(action: {
+                        let generator = UIImpactFeedbackGenerator(style: .light)
+                        generator.impactOccurred()
                         onEndSession()
                         isPresented = false
                     }) {
@@ -82,6 +84,8 @@ struct TimerDetailSheet: View {
                 }
 
                 Button(action: {
+                    let generator = UIImpactFeedbackGenerator(style: .light)
+                    generator.impactOccurred()
                     isPresented = false
                 }) {
                     Text(timer.hasExpired ? "Continue Learning" : "Back to Chat")
