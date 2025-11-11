@@ -73,6 +73,7 @@ class ChatViewModel: ObservableObject {
 
     func sendMessage() {
         guard !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        guard !isLoading else { return } // Prevent sending while model is streaming
 
         // If in quiz mode and no quiz session, capture topic and show type selection
         if currentMode == .quiz && quizSession == nil && pendingQuizTopic == nil {

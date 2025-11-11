@@ -116,10 +116,10 @@ struct ChatView: View {
                                     .font(.system(size: 18, weight: .semibold))
                                     .foregroundColor(.white)
                                     .frame(width: 40, height: 40)
-                                    .background(viewModel.inputText.isEmpty ? Color.gray : Color.claudeOrange)
+                                    .background((viewModel.inputText.isEmpty || viewModel.isLoading) ? Color.gray : Color.claudeOrange)
                                     .clipShape(Circle())
                             }
-                            .disabled(viewModel.inputText.isEmpty)
+                            .disabled(viewModel.inputText.isEmpty || viewModel.isLoading)
                         }
                     }
 
