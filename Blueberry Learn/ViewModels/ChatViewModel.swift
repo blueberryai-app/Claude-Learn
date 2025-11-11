@@ -440,6 +440,11 @@ class ChatViewModel: ObservableObject {
     // MARK: - Frustration Button Methods
 
     var isFrustrationButtonDisabled: Bool {
+        // Disable while model is streaming
+        if isLoading {
+            return true
+        }
+
         let currentUserMessageCount = messages.filter { $0.role == .user }.count
 
         // Disable if no messages have been sent yet

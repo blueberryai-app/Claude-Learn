@@ -321,6 +321,7 @@ struct ChatView: View {
                                 .font(.system(size: 20))
                         }
                     }
+                    .disabled(viewModel.isLoading)
 
                     Button(action: {
                         viewModel.handleFrustrationButton()
