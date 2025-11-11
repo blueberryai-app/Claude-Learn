@@ -219,7 +219,8 @@ class ChatViewModel: ObservableObject {
                 await MainActor.run {
                     if let lastIndex = self.messages.indices.last {
                         // Handle quiz mode specially - parse JSON and clear content
-                        if self.currentMode == .quiz {
+                        // Check the message's activeMode, not the current mode (which may have changed during streaming)
+                        if self.messages[lastIndex].activeMode == .quiz {
                             if let quizResponse = self.parseQuizResponse(from: fullResponse) {
                                 // Success! Reset retry count and clear invalid response
                                 self.quizRetryCount = 0
@@ -725,7 +726,8 @@ class ChatViewModel: ObservableObject {
                 await MainActor.run {
                     if let lastIndex = self.messages.indices.last {
                         // Handle quiz mode - parse JSON and clear content
-                        if self.currentMode == .quiz {
+                        // Check the message's activeMode, not the current mode (which may have changed during streaming)
+                        if self.messages[lastIndex].activeMode == .quiz {
                             if let quizResponse = self.parseQuizResponse(from: fullResponse) {
                                 // Success! Reset retry count and clear invalid response
                                 self.quizRetryCount = 0
