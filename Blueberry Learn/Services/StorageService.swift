@@ -6,6 +6,9 @@ class StorageService {
 
     private let sessionsKey = "chatSessions"
     private let messagesKeyPrefix = "messages_"
+    private let customAPIKeyKey = "customAPIKey"
+    private let educationTeamUnlockedKey = "educationTeamUnlocked"
+    private let hasLaunchedBeforeKey = "hasLaunchedBefore"
 
     private init() {}
 
@@ -97,5 +100,41 @@ class StorageService {
         // Check if there's old space-based data to migrate
         // For now, we'll just start fresh, but this is where migration logic would go
         // if we needed to preserve existing user data
+    }
+
+    // MARK: - API Key Management
+    func saveCustomAPIKey(_ key: String) {
+        userDefaults.set(key, forKey: customAPIKeyKey)
+        userDefaults.synchronize()
+    }
+
+    func loadCustomAPIKey() -> String? {
+        return userDefaults.string(forKey: customAPIKeyKey)
+    }
+
+    func clearCustomAPIKey() {
+        userDefaults.removeObject(forKey: customAPIKeyKey)
+        userDefaults.synchronize()
+    }
+
+    // MARK: - Education Team Unlock
+    func setEducationTeamUnlocked(_ unlocked: Bool) {
+        userDefaults.set(unlocked, forKey: educationTeamUnlockedKey)
+        userDefaults.synchronize()
+    }
+
+    func isEducationTeamUnlocked() -> Bool {
+        return userDefaults.bool(forKey: educationTeamUnlockedKey)
+    }
+
+    // MARK: - First Launch
+    func isFirstLaunch() -> Bool {
+        let hasLaunched = userDefaults.bool(forKey: hasLaunchedBeforeKey)
+        return !hasLaunched && !APIConfiguration.hasValidAPIKey
+    }
+
+    func markAsLaunched() {
+        userDefaults.set(true, forKey: hasLaunchedBeforeKey)
+        userDefaults.synchronize()
     }
 }

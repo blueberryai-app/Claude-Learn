@@ -6,6 +6,30 @@ struct APIConfiguration {
     // Key from: https://console.anthropic.com/account/keys
     static let anthropicAPIKey = ""
 
+    // Education team password
+    static let educationTeamPassword = "AnthropicEDUTeam"
+
+    // Get the active API key (custom or education team only - no fallback)
+    static var activeAPIKey: String {
+        // First check if education team is unlocked
+        if StorageService.shared.isEducationTeamUnlocked() {
+            return anthropicAPIKey
+        }
+
+        // Then check for custom API key
+        if let customKey = StorageService.shared.loadCustomAPIKey(), !customKey.isEmpty {
+            return customKey
+        }
+
+        // Return empty string if no key is configured
+        return ""
+    }
+
+    // Check if a valid API key is configured
+    static var hasValidAPIKey: Bool {
+        return !activeAPIKey.isEmpty
+    }
+
     // Optional: Set to true to use mock responses instead of real API calls (for testing UI)
     static let useMockResponses = false
 

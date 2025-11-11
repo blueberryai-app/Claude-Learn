@@ -7,7 +7,7 @@ class AnthropicService {
 
     // Use configuration file for API key
     init(apiKey: String? = nil) {
-        self.apiKey = apiKey ?? APIConfiguration.anthropicAPIKey
+        self.apiKey = apiKey ?? APIConfiguration.activeAPIKey
         self.service = AnthropicServiceFactory.service(
             apiKey: self.apiKey,
             betaHeaders: nil
