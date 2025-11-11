@@ -6,6 +6,8 @@ struct MainView: View {
     @State private var navigateToSession: ChatSession? = nil
     @State private var showFilesInfo = false
     @State private var showInstructionsInfo = false
+    @State private var showSettings = false
+    @State private var isFirstLaunch = false
 
     var body: some View {
         NavigationStack {
@@ -134,8 +136,26 @@ struct MainView: View {
             }
             .navigationTitle("Claude Learn")
             .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: {
+                        showSettings = true
+                    }) {
+                        Image(systemName: "gear")
+                            .font(.system(size: 20))
+                            .foregroundColor(.secondary)
+                    }
+                }
+            }
             .onAppear {
                 viewModel.loadSessions()
+
+                // Check if this is first launch and no API key is configured
+                if StorageService.shared.isFirstLaunch() {
+                    isFirstLaunch = true
+                    showSettings = true
+                    StorageService.shared.markAsLaunched()
+                }
             }
             .navigationDestination(isPresented: $navigateToNewChat) {
                 ChatView(sessionId: nil)
@@ -148,6 +168,9 @@ struct MainView: View {
             }
             .sheet(isPresented: $showInstructionsInfo) {
                 InstructionsInfoSheet()
+            }
+            .sheet(isPresented: $showSettings) {
+                SettingsView()
             }
         }
     }
@@ -241,7 +264,7 @@ struct FilesInfoSheet: View {
                     Button(action: {
                         dismiss()
                     }) {
-                        Image(systemName: "xmark.circle.fill")
+                        Image(systemName: "xmark")
                             .font(.system(size: 22))
                             .foregroundColor(.secondary)
                             .symbolRenderingMode(.hierarchical)
@@ -250,7 +273,7 @@ struct FilesInfoSheet: View {
             }
         }
         .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
+        .presentationDragIndicator(.hidden)
     }
 }
 
@@ -307,7 +330,7 @@ struct InstructionsInfoSheet: View {
                     Button(action: {
                         dismiss()
                     }) {
-                        Image(systemName: "xmark.circle.fill")
+                        Image(systemName: "xmark")
                             .font(.system(size: 22))
                             .foregroundColor(.secondary)
                             .symbolRenderingMode(.hierarchical)
@@ -316,7 +339,7 @@ struct InstructionsInfoSheet: View {
             }
         }
         .presentationDetents([.medium])
-        .presentationDragIndicator(.visible)
+        .presentationDragIndicator(.hidden)
     }
 }
 

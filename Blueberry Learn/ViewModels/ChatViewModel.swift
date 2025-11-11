@@ -13,6 +13,7 @@ class ChatViewModel: ObservableObject {
     @Published var showCustomEntityAlert = false
     @Published var streamingMessageContent = ""
     @Published var errorMessage: String?
+    @Published var showNoAPIKeyAlert = false
 
     // Timer-related properties
     @Published var sessionTimer = SessionTimer()
@@ -74,6 +75,12 @@ class ChatViewModel: ObservableObject {
     func sendMessage() {
         guard !inputText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
         guard !isLoading else { return } // Prevent sending while model is streaming
+
+        // Check if API key is configured
+        guard APIConfiguration.hasValidAPIKey else {
+            showNoAPIKeyAlert = true
+            return
+        }
 
         // If in quiz mode and no quiz session, capture topic and show type selection
         if currentMode == .quiz && quizSession == nil && pendingQuizTopic == nil {

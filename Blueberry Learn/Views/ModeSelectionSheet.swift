@@ -115,6 +115,7 @@ struct AttachmentOption: View {
                 .foregroundColor(.primary)
         }
         .frame(maxWidth: .infinity)
+        .opacity(0.4)
     }
 }
 
