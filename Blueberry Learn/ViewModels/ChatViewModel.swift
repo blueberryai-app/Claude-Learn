@@ -452,6 +452,16 @@ class ChatViewModel: ObservableObject {
             return
         }
 
+        // FIRST: Reset all modes and lenses (but keep timers active)
+        // This helps students start fresh when frustrated
+        if currentMode == .quiz {
+            exitQuizMode()
+        } else {
+            currentMode = .standard
+        }
+        currentLens = nil
+        customEntityName = "" // Clear mimic mode entity
+
         // Trigger haptic feedback
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
