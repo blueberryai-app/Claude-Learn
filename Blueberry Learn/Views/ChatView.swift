@@ -12,52 +12,6 @@ struct ChatView: View {
         self._viewModel = StateObject(wrappedValue: ChatViewModel(sessionId: sessionId))
     }
 
-    @ToolbarContentBuilder
-    private var toolbarContent: some ToolbarContent {
-        // Custom back button when timer is active
-        if viewModel.sessionTimer.isActive {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: {
-                    viewModel.showNavigationAlert = true
-                }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
-                        Text("Back")
-                    }
-                }
-            }
-        }
-
-        ToolbarItem(placement: .navigationBarTrailing) {
-            HStack(spacing: 16) {
-                // Timer button - shows clock or progress
-                Button(action: {
-                    if viewModel.sessionTimer.isActive {
-                        viewModel.isShowingTimerDetail = true
-                    } else {
-                        viewModel.isShowingTimerSelection = true
-                    }
-                }) {
-                    if viewModel.sessionTimer.isActive {
-                        CircularProgressTimer(timer: viewModel.sessionTimer)
-                    } else {
-                        Image(systemName: "clock")
-                            .font(.system(size: 20))
-                    }
-                }
-
-                Button(action: {
-                    viewModel.handleFrustrationButton()
-                }) {
-                    Image(systemName: "exclamationmark.arrow.trianglehead.2.clockwise.rotate.90")
-                        .font(.system(size: 20))
-
-                }
-                .disabled(viewModel.isFrustrationButtonDisabled)
-            }
-        }
-    }
-
     var body: some View {
         VStack(spacing: 0) {
             // Error banner if present
