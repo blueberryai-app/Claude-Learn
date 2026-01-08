@@ -8,8 +8,8 @@ _By Daniel Matar_
 
 
 Claude Learn reimagines how people learn with AI.  
-Instead of removing friction, it helps learners work *through* it — turning challenges into growth moments.  
-Designed for Anthropic’s **Education Labs Take-Home Assignment (Option B)**.
+Instead of removing friction, it helps learners work *through* it, turning challenges into growth moments.  
+Designed as a mock product proposal for **Anthropic Education**.
 
 ---
 
